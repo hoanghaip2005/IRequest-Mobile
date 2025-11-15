@@ -11,32 +11,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.project.irequest.presentation.navigation.IRequestNavigation
-import com.project.irequest.ui.theme.IRequestTheme
-import dagger.hilt.android.AndroidEntryPoint
+import com.project.irequest.presentation.theme.IRequestTheme
+//import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
+//@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            IRequestTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    IRequestApp()
-                }
-            }
+            IRequestApp()
         }
     }
 }
 
 @Composable
 fun IRequestApp() {
-    val navController = rememberNavController()
-    
-    IRequestNavigation(
-        navController = navController
-    )
+    IRequestTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            val navController = rememberNavController()
+            IRequestNavigation(navController = navController)
+        }
+    }
 }

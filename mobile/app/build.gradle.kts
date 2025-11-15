@@ -1,19 +1,35 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.compose.compiler)
+    //alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
+    id("com.diffplug.spotless")
+}
+
+spotless {
+    kotlin {
+        target("**/*.kt")
+        ktlint("1.0.1").editorConfigOverride(
+            mapOf(
+                "indent_size" to "4",
+                "max_line_length" to "120"
+            )
+        )
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 android {
     namespace = "com.project.irequest"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.project.irequest"
-        minSdk = 24
-        targetSdk = 34
+        minSdk = 26
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -61,6 +77,8 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -72,10 +90,10 @@ dependencies {
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
     
-    // Hilt Dependency Injection
-    implementation(libs.hilt.android)
-    implementation(libs.androidx.hilt.navigation.compose)
-    kapt(libs.hilt.compiler)
+    // Hilt Dependency Injection (temporarily disabled)
+    //implementation(libs.hilt.android)
+    //implementation(libs.androidx.hilt.navigation.compose)
+    //ksp(libs.hilt.compiler)
     
     // Retrofit & Networking
     implementation(libs.retrofit)
@@ -89,7 +107,7 @@ dependencies {
     // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     
     // ViewModel & LiveData
     implementation(libs.androidx.lifecycle.viewmodel.compose)
