@@ -1,8 +1,34 @@
 package com.project.irequest.data.remote.api
 
-import com.project.irequest.data.remote.dto.*
+import com.project.irequest.data.remote.dto.ApiResponse
+import com.project.irequest.data.remote.dto.ApproveRequestDto
+import com.project.irequest.data.remote.dto.AuthResponseDto
+import com.project.irequest.data.remote.dto.ChangePasswordDto
+import com.project.irequest.data.remote.dto.CommentDto
+import com.project.irequest.data.remote.dto.CreateCommentDto
+import com.project.irequest.data.remote.dto.CreateRequestDto
+import com.project.irequest.data.remote.dto.DepartmentDto
+import com.project.irequest.data.remote.dto.LoginDto
+import com.project.irequest.data.remote.dto.NotificationDto
+import com.project.irequest.data.remote.dto.PagedResponse
+import com.project.irequest.data.remote.dto.PriorityDto
+import com.project.irequest.data.remote.dto.RefreshTokenDto
+import com.project.irequest.data.remote.dto.RegisterDto
+import com.project.irequest.data.remote.dto.RequestDto
+import com.project.irequest.data.remote.dto.StatusDto
+import com.project.irequest.data.remote.dto.UpdateRequestDto
+import com.project.irequest.data.remote.dto.UpdateUserDto
+import com.project.irequest.data.remote.dto.UserDto
+import com.project.irequest.data.remote.dto.WorkflowDto
+import com.project.irequest.data.remote.dto.WorkflowStepDto
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface AuthApi {
     @POST("auth/login")

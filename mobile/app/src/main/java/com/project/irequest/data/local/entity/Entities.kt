@@ -16,7 +16,8 @@ data class UserEntity(
     val birthDate: String?,
     val departmentId: Int?,
     val departmentName: String?,
-    val roles: String, // JSON string of roles
+    // JSON string of roles
+    val roles: String,
     val createdAt: String,
     val isActive: Boolean
 )

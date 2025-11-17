@@ -32,10 +32,17 @@ object AppDestinations {
     
     object Main {
         const val HOME = "main/home"           // Bottom navigation root
-        const val REQUESTS = "main/requests"   // Bottom navigation root  
-        const val NOTIFICATIONS = "main/notifications" // Bottom navigation root
-        const val SEARCH = "main/search"       // Bottom navigation root
+        const val MY_TASKS = "main/my-tasks"   // Bottom navigation root (Work Center)
+        const val ALERTS = "main/alerts"       // Bottom navigation root (Notifications + Chat + SLA)
         const val PROFILE = "main/profile"     // Bottom navigation root
+        
+        // Legacy routes (kept for backward compatibility)
+        @Deprecated("Use MY_TASKS instead")
+        const val REQUESTS = "main/requests"   
+        @Deprecated("Use ALERTS instead")
+        const val NOTIFICATIONS = "main/notifications"
+        @Deprecated("Search integrated into other screens")
+        const val SEARCH = "main/search"
     }
     
     // =====================================
@@ -156,6 +163,14 @@ object AppDestinations {
         const val ABOUT = "profile/about"                      // About app
         const val HELP = "profile/help"                        // Help & support
         const val LOGOUT = "profile/logout"                    // → AccountController.Logout()
+        
+        // Detail Pages
+        const val PERSONAL_INFO = "profile/personal-info"        // Personal information detail
+        const val TERMS_OF_SERVICE = "profile/terms"            // Terms of service
+        const val PRIVACY_POLICY = "profile/privacy-policy"     // Privacy policy
+        const val DATA_PRIVACY = "profile/data-privacy"         // Data privacy policy
+        const val SECURITY_PRIVACY = "profile/security-privacy" // Security and privacy
+        const val SUPPORT_HELP = "profile/support"              // Support and help
     }
     
     // =====================================

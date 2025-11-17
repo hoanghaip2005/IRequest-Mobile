@@ -10,6 +10,7 @@ import com.project.irequest.presentation.ui.auth.ForgotPasswordScreen
 import com.project.irequest.presentation.ui.main.MainScreen
 
 @Composable
+@Suppress("FunctionName")
 fun IRequestNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
@@ -53,7 +54,7 @@ fun IRequestNavigation(navController: NavHostController) {
             )
         }
         
-        // Main App Flow
+        // Main App Flow with Bottom Navigation
         composable(AppDestinations.Main.HOME) {
             MainScreen(
                 onLogout = {

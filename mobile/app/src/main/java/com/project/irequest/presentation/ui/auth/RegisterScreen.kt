@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -22,6 +23,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
+import com.project.irequest.R
+import com.project.irequest.presentation.theme.PrimaryBlue
+import com.project.irequest.presentation.theme.CustomOrange
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,59 +60,57 @@ fun RegisterScreen(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         
-        // Header
-        Card(
-            modifier = Modifier.size(100.dp),
-            shape = RoundedCornerShape(50.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start)
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Register",
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "App Logo",
+                modifier = Modifier.size(24.dp)
+            )
+
+            Text(
+                text = "iRequest",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                ),
+                color = PrimaryBlue
+            )
         }
         
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Text(
-            text = "Tạo tài khoản mới",
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.Bold
-            ),
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        
-        Text(
-            text = "Điền thông tin để tạo tài khoản IRequest",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
-        )
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Tạo tài khoản mới",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            
+            Text(
+                text = "Điền thông tin để tạo tài khoản IRequest",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
         
         // Form đăng ký
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
             Column(
-                modifier = Modifier.padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Full Name field
@@ -116,12 +122,7 @@ fun RegisterScreen(
                     },
                     label = { Text("Họ và tên") },
                     placeholder = { Text("Nhập họ và tên") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Name Icon"
-                        )
-                    },
+                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
@@ -144,12 +145,7 @@ fun RegisterScreen(
                     },
                     label = { Text("Email") },
                     placeholder = { Text("Nhập email") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Email,
-                            contentDescription = "Email Icon"
-                        )
-                    },
+                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next
@@ -172,19 +168,17 @@ fun RegisterScreen(
                     },
                     label = { Text("Mật khẩu") },
                     placeholder = { Text("Nhập mật khẩu") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "Password Icon"
-                        )
-                    },
+                    shape = RoundedCornerShape(12.dp),
                     trailingIcon = {
                         IconButton(
                             onClick = { isPasswordVisible = !isPasswordVisible }
                         ) {
-                            Text(
-                                text = if (isPasswordVisible) "👁" else "🔒",
-                                style = MaterialTheme.typography.titleMedium
+                            Icon(
+                                painter = painterResource(
+                                    id = if (isPasswordVisible) R.drawable.eye else R.drawable.eye_closed
+                                ),
+                                contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     },
@@ -214,19 +208,17 @@ fun RegisterScreen(
                     },
                     label = { Text("Xác nhận mật khẩu") },
                     placeholder = { Text("Nhập lại mật khẩu") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "Confirm Password Icon"
-                        )
-                    },
+                    shape = RoundedCornerShape(12.dp),
                     trailingIcon = {
                         IconButton(
                             onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible }
                         ) {
-                            Text(
-                                text = if (isConfirmPasswordVisible) "👁" else "🔒",
-                                style = MaterialTheme.typography.titleMedium
+                            Icon(
+                                painter = painterResource(
+                                    id = if (isConfirmPasswordVisible) R.drawable.eye else R.drawable.eye_closed
+                                ),
+                                contentDescription = if (isConfirmPasswordVisible) "Hide password" else "Show password",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     },
@@ -246,11 +238,21 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .focusRequester(focusRequesters[3])
                 )
+
+                                // Error message
+                errorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 
                 // Terms and conditions
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Checkbox(
                         checked = agreeToTerms,
@@ -264,35 +266,16 @@ fun RegisterScreen(
                     )
                 }
                 
-                // Error message
-                errorMessage?.let { error ->
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
                 // Register button
                 Button(
                     onClick = {
                         when {
-                            fullName.isBlank() -> errorMessage = "Vui lòng nhập họ và tên"
-                            email.isBlank() -> errorMessage = "Vui lòng nhập email"
-                            password.isBlank() -> errorMessage = "Vui lòng nhập mật khẩu"
-                            password.length < 6 -> errorMessage = "Mật khẩu phải có ít nhất 6 ký tự"
-                            password != confirmPassword -> errorMessage = "Mật khẩu xác nhận không khớp"
-                            !agreeToTerms -> errorMessage = "Vui lòng đồng ý với điều khoản sử dụng"
+                            fullName.isBlank() -> errorMessage = "*Vui lòng nhập họ và tên"
+                            email.isBlank() -> errorMessage = "*Vui lòng nhập email"
+                            password.isBlank() -> errorMessage = "*Vui lòng nhập mật khẩu"
+                            password.length < 6 -> errorMessage = "*Mật khẩu phải có ít nhất 6 ký tự"
+                            password != confirmPassword -> errorMessage = "*Mật khẩu xác nhận không khớp"
+                            !agreeToTerms -> errorMessage = "*Vui lòng đồng ý với điều khoản sử dụng"
                             else -> {
                                 isLoading = true
                                 // TODO: Implement actual register logic
@@ -303,7 +286,11 @@ fun RegisterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-                    enabled = !isLoading
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CustomOrange,
+                    ),
+                    shape = RoundedCornerShape(12.dp),
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
@@ -321,7 +308,6 @@ fun RegisterScreen(
                     }
                 }
             }
-        }
         
         Spacer(modifier = Modifier.height(32.dp))
         
@@ -341,7 +327,7 @@ fun RegisterScreen(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = MaterialTheme.colorScheme.primary
+                    color = CustomOrange,
                 )
             }
         }

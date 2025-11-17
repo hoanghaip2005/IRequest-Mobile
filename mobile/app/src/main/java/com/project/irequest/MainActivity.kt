@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+@Suppress("FunctionName")
 fun IRequestApp() {
     IRequestTheme {
         Surface(

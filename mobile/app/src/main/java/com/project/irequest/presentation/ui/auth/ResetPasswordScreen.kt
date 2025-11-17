@@ -1,7 +1,6 @@
 package com.project.irequest.presentation.ui.auth
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,19 +17,18 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,23 +53,24 @@ import com.project.irequest.presentation.theme.CustomOrange
 import com.project.irequest.presentation.theme.PrimaryBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("FunctionName")
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onNavigateToRegister: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit
+fun ResetPasswordScreen(
+    email: String,
+    resetCode: String,
+    onResetSuccess: () -> Unit,
+    onNavigateBack: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isNewPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    val emailFocusRequester = remember { FocusRequester() }
-    val passwordFocusRequester = remember { FocusRequester() }
+    
+    val focusRequesters = remember {
+        List(2) { FocusRequester() }
+    }
     val keyboardController = LocalSoftwareKeyboardController.current
-
     val scrollState = rememberScrollState()
 
     Column(
@@ -83,8 +81,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(20.dp))
-
-
+        
         // Logo và tiêu đề
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -106,7 +103,7 @@ fun LoginScreen(
                 color = PrimaryBlue
             )
         }
-
+        
         Spacer(modifier = Modifier.height(40.dp))
 
         Column(
@@ -115,141 +112,156 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Welcome Back!",
-                style = MaterialTheme.typography.headlineMedium,
+                text = "Đặt lại mật khẩu",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
                 color = MaterialTheme.colorScheme.onBackground
             )
-
+            
             Text(
-                text = "Enter your login information",
+                text = "Vui lòng nhập mật khẩu mới của bạn",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Start,
+                textAlign = TextAlign.Start
             )
         }
+        
         Spacer(modifier = Modifier.height(48.dp))
-
-        // Form đăng nhập
-
+        
+        // Form
         Column(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Email field
+            // Email field (readonly)
             OutlinedTextField(
                 value = email,
-                onValueChange = {
-                    email = it
+                onValueChange = {},
+                label = { Text("Email") },
+                shape = RoundedCornerShape(12.dp),
+                enabled = false,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+            
+            // New Password field
+            OutlinedTextField(
+                value = newPassword,
+                onValueChange = { 
+                    newPassword = it
                     errorMessage = null
                 },
-                label = { Text("Email") },
-                placeholder = { Text("Nhập email của bạn") },
+                label = { Text("Mật khẩu mới") },
+                placeholder = { Text("Nhập mật khẩu mới") },
                 shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    IconButton(
+                        onClick = { isNewPasswordVisible = !isNewPasswordVisible }
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id = if (isNewPasswordVisible) R.drawable.eye else R.drawable.eye_closed
+                            ),
+                            contentDescription = if (isNewPasswordVisible) "Hide password" else "Show password",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                visualTransformation = if (isNewPasswordVisible) 
+                    VisualTransformation.None 
+                else 
+                    PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
+                    keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
-                    onNext = { passwordFocusRequester.requestFocus() }
+                    onNext = { focusRequesters[1].requestFocus() }
                 ),
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(emailFocusRequester),
+                    .focusRequester(focusRequesters[0]),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Password field
+            
+            // Confirm Password field
             OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
+                value = confirmPassword,
+                onValueChange = { 
+                    confirmPassword = it
                     errorMessage = null
                 },
-                label = { Text("Mật khẩu") },
-                placeholder = { Text("Nhập mật khẩu") },
+                label = { Text("Xác nhận mật khẩu") },
+                placeholder = { Text("Nhập lại mật khẩu mới") },
                 shape = RoundedCornerShape(12.dp),
                 trailingIcon = {
                     IconButton(
-                        onClick = { isPasswordVisible = !isPasswordVisible }
+                        onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible }
                     ) {
                         Icon(
                             painter = painterResource(
-                                id = if (isPasswordVisible) R.drawable.eye else R.drawable.eye_closed
+                                id = if (isConfirmPasswordVisible) R.drawable.eye else R.drawable.eye_closed
                             ),
-                            contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
+                            contentDescription = if (isConfirmPasswordVisible) "Hide password" else "Show password",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
-                visualTransformation = if (isPasswordVisible)
-                    VisualTransformation.None
-                else
+                visualTransformation = if (isConfirmPasswordVisible) 
+                    VisualTransformation.None 
+                else 
                     PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
-                    onDone = {
-                        keyboardController?.hide()
-                        // Trigger login
-                    }
+                    onDone = { keyboardController?.hide() }
                 ),
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(passwordFocusRequester),
+                    .focusRequester(focusRequesters[1]),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-
-
-            // Forgot password
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                errorMessage?.let { error ->
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
+            
+            // Error message
+            errorMessage?.let { error ->
                 Text(
-                    text = "Quên mật khẩu?",
-                    color = CustomOrange,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.clickable { onNavigateToForgotPassword() }
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
+            
             Spacer(modifier = Modifier.height(8.dp))
-
+            
+            // Reset button
             Button(
                 onClick = {
-                    if (email.isBlank()) {
-                        errorMessage = "*Vui lòng nhập email"
-                        return@Button
+                    when {
+                        newPassword.isBlank() -> errorMessage = "Vui lòng nhập mật khẩu mới"
+                        newPassword.length < 6 -> errorMessage = "Mật khẩu phải có ít nhất 6 ký tự"
+                        confirmPassword.isBlank() -> errorMessage = "Vui lòng xác nhận mật khẩu"
+                        newPassword != confirmPassword -> errorMessage = "Mật khẩu xác nhận không khớp"
+                        else -> {
+                            isLoading = true
+                            // TODO: Implement actual reset password logic with resetCode
+                            onResetSuccess()
+                        }
                     }
-                    if (password.isBlank()) {
-                        errorMessage = "*Vui lòng nhập mật khẩu"
-                        return@Button
-                    }
-
-                    isLoading = true
-                    // TODO: Implement actual login logic
-                    // For now, simulate success
-                    onLoginSuccess()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -258,7 +270,7 @@ fun LoginScreen(
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CustomOrange
-                ),
+                )
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -268,7 +280,37 @@ fun LoginScreen(
                     )
                 } else {
                     Text(
-                        "Đăng nhập",
+                        "Đặt lại mật khẩu",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
+            
+            // Back button
+            OutlinedButton(
+                onClick = onNavigateBack,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Quay lại",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Medium
                         )
@@ -276,117 +318,7 @@ fun LoginScreen(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Divider
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f))
-            Text(
-                text = "hoặc",
-                modifier = Modifier.padding(horizontal = 16.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            HorizontalDivider(modifier = Modifier.weight(1f))
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-        // Row login bằng google và facebook
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Google Login Button
-            OutlinedButton(
-                onClick = { /* TODO: Google login */ },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.google),
-                        contentDescription = "Google Logo",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Google",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                }
-            }
-
-            // Facebook Login Button
-            OutlinedButton(
-                onClick = { /* TODO: Facebook login */ },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.facebook),
-                        contentDescription = "Facebook Logo",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Facebook",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Register prompt
         
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Chưa có tài khoản? ",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            TextButton(onClick = onNavigateToRegister) {
-                Text(
-                    "Đăng ký ngay",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Medium
-                    ),
-                    color = CustomOrange,
-                )
-            }
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
     }
 }

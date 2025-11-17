@@ -13,6 +13,8 @@ val PrimaryBlueVariant = Color(0xFF1565C0) // Material Blue 800
 val SecondaryGreen = Color(0xFF4CAF50)   // Material Green 500
 val AccentOrange = Color(0xFFFF9800)     // Material Orange 500
 val CustomOrange = Color(0xFFFB8C00)     // Custom Orange
+val CustomGreen = Color(0xFF4CAF50)      // Custom Green (Material Green 500)
+val CustomRed = Color(0xFFF44336)        // Custom Red (Material Red 500)
 
 val LightColors = lightColorScheme(
     primary = PrimaryBlue,
@@ -45,17 +47,20 @@ val LightColors = lightColorScheme(
 )
 
 val DarkColors = darkColorScheme(
-    primary = Color(0xFF90CAF9),          // Lighter blue for dark theme
+    // Lighter blue for dark theme
+    primary = Color(0xFF90CAF9),
     onPrimary = Color(0xFF0D47A1),
     primaryContainer = Color(0xFF1565C0),
     onPrimaryContainer = Color(0xFFE3F2FD),
     
-    secondary = Color(0xFF81C784),        // Lighter green for dark theme
+    // Lighter green for dark theme
+    secondary = Color(0xFF81C784),
     onSecondary = Color(0xFF1B5E20),
     secondaryContainer = Color(0xFF388E3C),
     onSecondaryContainer = Color(0xFFE8F5E8),
     
-    tertiary = Color(0xFFFFB74D),         // Lighter orange for dark theme
+    // Lighter orange for dark theme
+    tertiary = Color(0xFFFFB74D),
     onTertiary = Color(0xFFE65100),
     tertiaryContainer = Color(0xFFFF8F00),
     onTertiaryContainer = Color(0xFFFFF3E0),
@@ -76,6 +81,7 @@ val DarkColors = darkColorScheme(
 
 
 @Composable
+@Suppress("FunctionName")
 fun IRequestTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
