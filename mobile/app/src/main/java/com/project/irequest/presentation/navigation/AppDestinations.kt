@@ -36,6 +36,11 @@ object AppDestinations {
         const val ALERTS = "main/alerts"       // Bottom navigation root (Notifications + Chat + SLA)
         const val PROFILE = "main/profile"     // Bottom navigation root
         
+        // Quick Navigation Routes
+        const val REPORTS = "main/reports"     // Analytics dashboard
+        const val BOARD = "main/board"         // Kanban board
+        const val ROADMAP = "main/roadmap"     // Project timeline & milestones
+        
         // Legacy routes (kept for backward compatibility)
         @Deprecated("Use MY_TASKS instead")
         const val REQUESTS = "main/requests"   

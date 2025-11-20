@@ -26,7 +26,7 @@ import com.project.irequest.presentation.navigation.AppDestinations
 import com.project.irequest.presentation.navigation.BottomNavItem
 import com.project.irequest.presentation.theme.PrimaryBlue
 import com.project.irequest.presentation.ui.alerts.AlertsScreen
-import com.project.irequest.presentation.ui.home.HomeScreen
+import com.project.irequest.presentation.ui.home.HomeScreenComplete
 import com.project.irequest.presentation.ui.mytasks.MyTasksScreen
 import com.project.irequest.presentation.ui.profile.ProfileScreen
 import com.project.irequest.presentation.ui.profile.EditProfileScreen
@@ -68,7 +68,7 @@ fun MainScreen(
         ) {
             // Home Tab - Dashboard and Overview
             composable(AppDestinations.Main.HOME) {
-                HomeScreen(
+                HomeScreenComplete(
                     onCreateRequest = {
                         // TODO: Navigate to create request
                     },
@@ -91,7 +91,49 @@ fun MainScreen(
                         navController.navigate(AppDestinations.Main.PROFILE) {
                             launchSingleTop = true
                         }
+                    },
+                    onSearchClick = {
+                        // TODO: Navigate to search screen
+                    },
+                    onReportsClick = {
+                        navController.navigate(AppDestinations.Main.REPORTS) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onBoardClick = {
+                        navController.navigate(AppDestinations.Main.BOARD) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onRoadmapClick = {
+                        navController.navigate(AppDestinations.Main.ROADMAP) {
+                            launchSingleTop = true
+                        }
                     }
+                )
+            }
+            
+            // Reports Screen - Analytics Dashboard
+            composable(AppDestinations.Main.REPORTS) {
+                com.project.irequest.presentation.ui.reports.ReportsScreen(
+                    onBack = { navController.navigateUp() }
+                )
+            }
+            
+            // Board Screen - Kanban Board
+            composable(AppDestinations.Main.BOARD) {
+                com.project.irequest.presentation.ui.board.BoardScreen(
+                    onBack = { navController.navigateUp() },
+                    onRequestClick = { requestId ->
+                        // TODO: Navigate to request details
+                    }
+                )
+            }
+            
+            // Roadmap Screen - Project Timeline & Milestones
+            composable(AppDestinations.Main.ROADMAP) {
+                com.project.irequest.presentation.ui.roadmap.RoadmapScreen(
+                    onBack = { navController.navigateUp() }
                 )
             }
             
@@ -268,7 +310,8 @@ private fun BottomNavigationBar(
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
-                        // Avoid multiple copies of the same destination
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
                         launchSingleTop = true
                         // Restore state when reselecting a previously selected item
                         restoreState = true

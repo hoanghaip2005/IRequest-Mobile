@@ -71,15 +71,23 @@ fun ProfileScreen(
 ) {
     var twoFactorEnabled by remember { mutableStateOf(false) }
     
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // Avatar & Basic Info Section
-        item {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shadowElevation = 1.dp,
+            color = Color.White
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+            // Avatar & Basic Info Sectionf
+            item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -159,97 +167,100 @@ fun ProfileScreen(
             }
             }
         }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
         
         // Legal & Support Items
-        item {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ActionListItem(
-                    iconRes = R.drawable.user,
-                    title = "Thông tin cá nhân",
-                    onClick = onPersonalInfo,
-                    showTopBorder = true,
-                    showBottomBorder = true
-                )
-                
-                ActionListItem(
-                    iconRes = R.drawable.file_text,
-                    title = "Điều khoản sử dụng",
-                    onClick = onTermsOfService,
-                    showTopBorder = true,
-                    showBottomBorder = true
-                )
-                
-                ActionListItem(
-                    iconRes = R.drawable.shield_keyhole,
-                    title = "Chính sách bảo mật",
-                    onClick = onPrivacyPolicy,
-                    showTopBorder = true,
-                    showBottomBorder = true
-                )
-                
-                ActionListItem(
-                    iconRes = R.drawable.key,
-                    title = "Chính sách dữ liệu cá nhân",
-                    onClick = onDataPrivacy,
-                    showTopBorder = true,
-                    showBottomBorder = true
-                )
-                
-                ActionListItem(
-                    iconRes = R.drawable.shield_user,
-                    title = "Bảo mật và quyền riêng tư",
-                    onClick = onSecurityPrivacy,
-                    showTopBorder = true,
-                    showBottomBorder = true
-                )
-                
-                ActionListItem(
-                    iconRes = R.drawable.question_circle,
-                    title = "Hỗ trợ và trợ giúp",
-                    onClick = onSupportHelp,
-                    showTopBorder = true,
-                    showBottomBorder = true
-                )
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            ActionListItem(
+                iconRes = R.drawable.user,
+                title = "Thông tin cá nhân",
+                onClick = onPersonalInfo,
+                showTopBorder = false,
+                showBottomBorder = true
+            )
+            
+            ActionListItem(
+                iconRes = R.drawable.file_text,
+                title = "Điều khoản sử dụng",
+                onClick = onTermsOfService,
+                showTopBorder = true,
+                showBottomBorder = true
+            )
+            
+            ActionListItem(
+                iconRes = R.drawable.shield_keyhole,
+                title = "Chính sách bảo mật",
+                onClick = onPrivacyPolicy,
+                showTopBorder = true,
+                showBottomBorder = true
+            )
+            
+            ActionListItem(
+                iconRes = R.drawable.key,
+                title = "Chính sách dữ liệu cá nhân",
+                onClick = onDataPrivacy,
+                showTopBorder = true,
+                showBottomBorder = true
+            )
+            
+            ActionListItem(
+                iconRes = R.drawable.shield_user,
+                title = "Bảo mật và quyền riêng tư",
+                onClick = onSecurityPrivacy,
+                showTopBorder = true,
+                showBottomBorder = true
+            )
+            
+            ActionListItem(
+                iconRes = R.drawable.question_circle,
+                title = "Hỗ trợ và trợ giúp",
+                onClick = onSupportHelp,
+                showTopBorder = true,
+                showBottomBorder = true
+            )
 
-                ActionListItem(
-                    iconRes = R.drawable.settings,
-                    title = "Cài đặt ứng dụng",
-                    onClick = onSettings,
-                    showTopBorder = true,
-                    showBottomBorder = true
-                )
-            }
+            ActionListItem(
+                iconRes = R.drawable.settings,
+                title = "Cài đặt ứng dụng",
+                onClick = onSettings,
+                showTopBorder = true,
+                showBottomBorder = true
+            )
         }
         
+        Spacer(modifier = Modifier.weight(1f))
+        
         // Logout Button
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(44.dp)
-                    .background(
-                        color = Color(0xFFFEE4E2),
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable(onClick = onLogout)
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Đăng xuất",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp
-                    ),
-                    color = Color(0xFFF04438)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .height(44.dp)
+                .background(
+                    color = Color(0xFFFEE4E2),
+                    shape = RoundedCornerShape(24.dp)
                 )
-            }
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(onClick = onLogout),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Đăng xuất",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                ),
+                color = Color(0xFFF04438)
+            )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -315,10 +326,10 @@ private fun InfoListItem(
         }
         
         if (onClick != null) {
-            Text(
-                text = "›",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            Image(
+                painter = painterResource(id = R.drawable.alt_arrow_right),
+                contentDescription = "Navigate",
+                modifier = Modifier.size(16.dp)
             )
         }
     }
@@ -337,10 +348,8 @@ private fun ActionListItem(
     ) {
         if (showTopBorder) {
             HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = (-16).dp),
-                color = Color(0xFFF2F4F7)
+                modifier = Modifier.fillMaxWidth(),
+                color = Color(0xFFFFFFFF)
             )
         }
         
@@ -348,8 +357,8 @@ private fun ActionListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
@@ -366,10 +375,10 @@ private fun ActionListItem(
                 modifier = Modifier.weight(1f)
             )
             
-            Text(
-                text = "›",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            Image(
+                painter = painterResource(id = R.drawable.alt_arrow_right),
+                contentDescription = "Navigate",
+                modifier = Modifier.size(16.dp)
             )
         }
         
@@ -381,3 +390,4 @@ private fun ActionListItem(
         }
     }
 }
+
