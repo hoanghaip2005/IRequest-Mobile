@@ -20,7 +20,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.irequest.data.models.Request
+import com.example.irequest.data.repository.FirebaseRequestRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.project.irequest.presentation.theme.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * Kanban Board Screen
@@ -33,18 +39,136 @@ import com.project.irequest.presentation.theme.*
 @Composable
 fun BoardScreen(
     onBack: () -> Unit = {},
-    onRequestClick: (String) -> Unit = {}
+    onRequestClick: (Int) -> Unit = {}
 ) {
+    // Create repository instance
+    val repository = remember {
+        FirebaseRequestRepository(
+            firestore = FirebaseFirestore.getInstance(),
+            auth = FirebaseAuth.getInstance()
+        )
+    }
+    
+    // State management
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var backlogRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
+    var todoRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
+    var inProgressRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
+    var reviewRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
+    var doneRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
+    
+    val scope = rememberCoroutineScope()
+    
+    // Load requests on first composition
+    LaunchedEffect(Unit) {
+        scope.launch {
+            isLoading = true
+            errorMessage = null
+            
+            try {
+                // Check if user is authenticated
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                
+                if (currentUser == null) {
+                    // Try to sign in anonymously or use a test account
+                    try {
+                        // Sign in with test account from seeded data
+                        FirebaseAuth.getInstance().signInWithEmailAndPassword(
+                            "john.doe@company.com",
+                            "password123"
+                        ).await()
+                    } catch (authError: Exception) {
+                        // Try anonymous auth as fallback
+                        FirebaseAuth.getInstance().signInAnonymously().await()
+                    }
+                }
+                
+                // Load ALL requests for kanban board view (not just user's requests)
+                val result = repository.getAllRequests(pageSize = 100)
+                result.onSuccess { requests ->
+                    // Group requests by status
+                    backlogRequests = requests.filter { 
+                        it.statusName?.contains("Backlog", ignoreCase = true) == true ||
+                        it.statusName?.contains("New", ignoreCase = true) == true
+                    }
+                    todoRequests = requests.filter { 
+                        it.statusName?.contains("To Do", ignoreCase = true) == true ||
+                        it.statusName?.contains("Pending", ignoreCase = true) == true
+                    }
+                    inProgressRequests = requests.filter { 
+                        it.statusName?.contains("In Progress", ignoreCase = true) == true ||
+                        it.statusName?.contains("Processing", ignoreCase = true) == true
+                    }
+                    reviewRequests = requests.filter { 
+                        it.statusName?.contains("Review", ignoreCase = true) == true ||
+                        it.statusName?.contains("Approval", ignoreCase = true) == true
+                    }
+                    doneRequests = requests.filter { 
+                        it.statusName?.contains("Done", ignoreCase = true) == true ||
+                        it.statusName?.contains("Completed", ignoreCase = true) == true ||
+                        it.statusName?.contains("Closed", ignoreCase = true) == true
+                    }
+                    isLoading = false
+                }.onFailure { error ->
+                    errorMessage = error.message ?: "Failed to load requests"
+                    isLoading = false
+                }
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Unknown error occurred"
+                isLoading = false
+            }
+        }
+    }
+    
+    // Show error dialog if needed
+    errorMessage?.let { error ->
+        AlertDialog(
+            onDismissRequest = { errorMessage = null },
+            title = { Text("Error") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = { errorMessage = null }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
+            // Custom TopAppBar với chiều cao tự động
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White,
+                shadowElevation = 4.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 8.dp), // Padding ôm sát content
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Navigation Icon
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                    
+                    // Title - chiếm không gian giữa
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 8.dp)
+                    ) {
                         Text(
                             text = "Kanban Board",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold
-                            )
+                            ),
+                            color = Color(0xFF101828)
                         )
                         Text(
                             text = "Visualize your workflow",
@@ -52,24 +176,17 @@ fun BoardScreen(
                             color = Color(0xFF667085)
                         )
                     }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    
+                    // Actions
+                    IconButton(onClick = { /* Filter */ }) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            Icons.Default.MoreVert,
+                            contentDescription = "Options",
+                            tint = Color(0xFF667085)
                         )
                     }
-                },
-                actions = {
-                    IconButton(onClick = { /* Filter */ }) {
-                        Icon(Icons.Default.MoreVert, "Options")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+                }
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -80,104 +197,90 @@ fun BoardScreen(
             }
         }
     ) { padding ->
-        LazyRow(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFAFAFA))
-                .padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(padding)
         ) {
-            // Backlog Column
-            item {
-                BoardColumn(
-                    title = "Backlog",
-                    count = 12,
-                    color = Color(0xFF6B7280),
-                    cards = listOf(
-                        CardData("REQ-1001", "New laptop request", "High", "Alex"),
-                        CardData("REQ-1002", "Software license", "Medium", "John"),
-                        CardData("REQ-1003", "Meeting room booking", "Low", "Sarah")
-                    ),
-                    onCardClick = onRequestClick
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = PrimaryBlue
                 )
-            }
-            
-            // To Do Column
-            item {
-                BoardColumn(
-                    title = "To Do",
-                    count = 8,
-                    color = PrimaryBlue,
-                    cards = listOf(
-                        CardData("REQ-0998", "Access card replacement", "High", "Mike"),
-                        CardData("REQ-0997", "Printer maintenance", "Medium", "Lisa")
-                    ),
-                    onCardClick = onRequestClick
-                )
-            }
-            
-            // In Progress Column
-            item {
-                BoardColumn(
-                    title = "In Progress",
-                    count = 15,
-                    color = CustomOrange,
-                    cards = listOf(
-                        CardData("REQ-0995", "Network troubleshooting", "High", "Tom"),
-                        CardData("REQ-0994", "Email setup", "Medium", "Emma"),
-                        CardData("REQ-0993", "Software installation", "Low", "David")
-                    ),
-                    onCardClick = onRequestClick
-                )
-            }
-            
-            // Review Column
-            item {
-                BoardColumn(
-                    title = "Review",
-                    count = 6,
-                    color = Color(0xFF8B5CF6),
-                    cards = listOf(
-                        CardData("REQ-0990", "VPN access approval", "Medium", "Anna"),
-                        CardData("REQ-0989", "Budget approval", "High", "Chris")
-                    ),
-                    onCardClick = onRequestClick
-                )
-            }
-            
-            // Done Column
-            item {
-                BoardColumn(
-                    title = "Done",
-                    count = 45,
-                    color = CustomGreen,
-                    cards = listOf(
-                        CardData("REQ-0987", "Password reset", "Low", "Jane"),
-                        CardData("REQ-0986", "File sharing setup", "Medium", "Bob"),
-                        CardData("REQ-0985", "Monitor replacement", "Low", "Kate")
-                    ),
-                    onCardClick = onRequestClick
-                )
+            } else {
+                LazyRow(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Backlog Column
+                    item {
+                        BoardColumn(
+                            title = "Backlog",
+                            count = backlogRequests.size,
+                            color = Color(0xFF6B7280),
+                            requests = backlogRequests,
+                            onCardClick = { request -> onRequestClick(request.requestId) }
+                        )
+                    }
+                    
+                    // To Do Column
+                    item {
+                        BoardColumn(
+                            title = "To Do",
+                            count = todoRequests.size,
+                            color = PrimaryBlue,
+                            requests = todoRequests,
+                            onCardClick = { request -> onRequestClick(request.requestId) }
+                        )
+                    }
+                    
+                    // In Progress Column
+                    item {
+                        BoardColumn(
+                            title = "In Progress",
+                            count = inProgressRequests.size,
+                            color = CustomOrange,
+                            requests = inProgressRequests,
+                            onCardClick = { request -> onRequestClick(request.requestId) }
+                        )
+                    }
+                    
+                    // Review Column
+                    item {
+                        BoardColumn(
+                            title = "Review",
+                            count = reviewRequests.size,
+                            color = Color(0xFF8B5CF6),
+                            requests = reviewRequests,
+                            onCardClick = { request -> onRequestClick(request.requestId) }
+                        )
+                    }
+                    
+                    // Done Column
+                    item {
+                        BoardColumn(
+                            title = "Done",
+                            count = doneRequests.size,
+                            color = CustomGreen,
+                            requests = doneRequests,
+                            onCardClick = { request -> onRequestClick(request.requestId) }
+                        )
+                    }
+                }
             }
         }
     }
 }
-
-data class CardData(
-    val id: String,
-    val title: String,
-    val priority: String,
-    val assignee: String
-)
 
 @Composable
 private fun BoardColumn(
     title: String,
     count: Int,
     color: Color,
-    cards: List<CardData>,
-    onCardClick: (String) -> Unit
+    requests: List<Request>,
+    onCardClick: (Request) -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -238,10 +341,10 @@ private fun BoardColumn(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(cards) { card ->
+                items(requests) { request ->
                     BoardCard(
-                        card = card,
-                        onClick = { onCardClick(card.id) }
+                        request = request,
+                        onClick = { onCardClick(request) }
                     )
                 }
                 
@@ -284,13 +387,13 @@ private fun BoardColumn(
 
 @Composable
 private fun BoardCard(
-    card: CardData,
+    request: Request,
     onClick: () -> Unit
 ) {
-    val priorityColor = when (card.priority) {
-        "High" -> CustomRed
-        "Medium" -> CustomOrange
-        "Low" -> CustomGreen
+    val priorityColor = when (request.priorityName?.lowercase()) {
+        "high", "urgent", "critical" -> CustomRed
+        "medium", "normal" -> CustomOrange
+        "low" -> CustomGreen
         else -> Color(0xFF667085)
     }
     
@@ -315,20 +418,22 @@ private fun BoardCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    color = priorityColor.copy(alpha = 0.1f)
-                ) {
-                    Text(
-                        text = card.priority,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = priorityColor
-                    )
+                request.priorityName?.let { priority ->
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = priorityColor.copy(alpha = 0.1f)
+                    ) {
+                        Text(
+                            text = priority,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = priorityColor
+                        )
+                    }
                 }
                 
                 Text(
-                    text = card.id,
+                    text = "REQ-${request.requestId}",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
@@ -338,7 +443,7 @@ private fun BoardCard(
             
             // Title
             Text(
-                text = card.title,
+                text = request.title,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium
                 ),
@@ -354,6 +459,7 @@ private fun BoardCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val assigneeName = request.assignedUserName ?: request.userName ?: "Unassigned"
                 Surface(
                     shape = CircleShape,
                     color = PrimaryBlue.copy(alpha = 0.2f),
@@ -361,7 +467,7 @@ private fun BoardCard(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = card.assignee.first().toString(),
+                            text = assigneeName.firstOrNull()?.uppercase() ?: "?",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold
                             ),
@@ -371,7 +477,7 @@ private fun BoardCard(
                 }
                 
                 Text(
-                    text = card.assignee,
+                    text = assigneeName,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF667085)
                 )

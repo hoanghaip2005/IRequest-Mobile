@@ -25,7 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.project.irequest.presentation.navigation.AppDestinations
 import com.project.irequest.presentation.navigation.BottomNavItem
 import com.project.irequest.presentation.theme.PrimaryBlue
-import com.project.irequest.presentation.ui.alerts.AlertsScreen
+import com.project.irequest.presentation.ui.chat.ChatScreen
 import com.project.irequest.presentation.ui.home.HomeScreenComplete
 import com.project.irequest.presentation.ui.mytasks.MyTasksScreen
 import com.project.irequest.presentation.ui.profile.ProfileScreen
@@ -44,7 +44,7 @@ import com.project.irequest.presentation.ui.profile.SupportHelpScreen
  * Optimized 4-tab navigation for Request Management Ecosystem:
  * - Home: Dashboard and Overview
  * - My Tasks: Work Center for Processing Requests (Multi-Workflow)
- * - Alerts: Unified Notifications + Chat + SLA Warnings
+ * - Chat: Messages & Conversations
  * - Profile: User Settings and Management
  */
 @Composable
@@ -82,7 +82,7 @@ fun MainScreen(
                         // TODO: Navigate to request details
                     },
                     onNotificationClick = {
-                        // Navigate to Alerts tab
+                        // Navigate to Chat tab
                         navController.navigate(AppDestinations.Main.ALERTS) {
                             launchSingleTop = true
                         }
@@ -155,14 +155,14 @@ fun MainScreen(
                 )
             }
             
-            // Alerts Tab - Unified Notifications + Chat + SLA Warnings
+            // Chat Tab - Messages & Conversations
             composable(AppDestinations.Main.ALERTS) {
-                AlertsScreen(
-                    onAlertClick = { alertId ->
-                        // TODO: Navigate to related request/chat/screen
+                ChatScreen(
+                    onChatClick = { chatId ->
+                        // TODO: Navigate to chat detail
                     },
-                    onMarkAllRead = {
-                        // TODO: Mark all alerts as read
+                    onNewChat = {
+                        // TODO: Create new chat
                     }
                 )
             }
@@ -341,11 +341,11 @@ private fun BottomNavigationBar(
                         is BottomNavItem.Alerts -> {
                             BadgedBox(
                                 badge = {
-                                    // TODO: Get actual alert count (notifications + chat + SLA) from ViewModel
-                                    val alertCount = 12
-                                    if (alertCount > 0) {
+                                    // TODO: Get unread message count from ViewModel
+                                    val unreadCount = 3
+                                    if (unreadCount > 0) {
                                         Badge {
-                                            Text(text = alertCount.toString())
+                                            Text(text = unreadCount.toString())
                                         }
                                     }
                                 }

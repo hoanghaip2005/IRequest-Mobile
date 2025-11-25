@@ -2,12 +2,12 @@ package com.project.irequest.presentation.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -41,10 +41,10 @@ sealed class BottomNavItem(
     
     object Alerts : BottomNavItem(
         route = AppDestinations.Main.ALERTS,
-        label = "Alerts",
-        selectedIcon = Icons.Filled.Notifications,
-        unselectedIcon = Icons.Outlined.Notifications,
-        description = "Notifications, Chat & SLA Warnings"
+        label = "Chat",
+        selectedIcon = Icons.Filled.Email,
+        unselectedIcon = Icons.Outlined.Email,
+        description = "Messages & Conversations"
     )
     
     object Profile : BottomNavItem(
