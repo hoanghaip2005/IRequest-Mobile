@@ -1,4 +1,5 @@
 package com.project.irequest.presentation.ui.main
+
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
@@ -26,7 +27,7 @@ import androidx.navigation.navArgument
 import com.project.irequest.presentation.navigation.AppDestinations
 import com.project.irequest.presentation.navigation.BottomNavItem
 import com.project.irequest.presentation.theme.PrimaryBlue
-import com.project.irequest.presentation.ui.alerts.AlertsScreen
+import com.project.irequest.presentation.ui.chat.ChatScreen
 import com.project.irequest.presentation.ui.home.HomeScreenComplete
 import com.project.irequest.presentation.ui.mytasks.MyTasksScreen
 import com.project.irequest.presentation.ui.profile.ProfileScreen
@@ -47,7 +48,7 @@ import com.project.irequest.presentation.ui.requests.detail.RequestDetailScreen
  * Optimized 4-tab navigation for Request Management Ecosystem:
  * - Home: Dashboard and Overview
  * - My Tasks: Work Center for Processing Requests (Multi-Workflow)
- * - Alerts: Unified Notifications + Chat + SLA Warnings
+ * - Chat: Messages & Conversations
  * - Profile: User Settings and Management
  */
 @Composable
@@ -57,7 +58,7 @@ fun MainScreen(
     onNavigateToDetail: (String) -> Unit = {}
 ) {
     val navController = rememberNavController()
-
+    
     Scaffold(
         bottomBar = {
             BottomNavigationBar(navController = navController)
@@ -76,29 +77,25 @@ fun MainScreen(
                     onCreateRequest = {
                         // TODO: Navigate to create request
                     },
-                    onMyTasks = {
+                    onMyRequests = {
+                        // Navigate to My Tasks tab
                         navController.navigate(AppDestinations.Main.MY_TASKS) {
                             launchSingleTop = true
                         }
                     },
-                    onRequestClick = { requestId ->
-                        // [UPDATE] Điều hướng đến chi tiết yêu cầu
-                        navController.navigate("request_detail/$requestId")
-                    },
-                    onNotificationClick = {
-                        navController.navigate(AppDestinations.Main.ALERTS) {
+                    onAssignedToMe = {
+                        // Navigate to My Tasks tab
+                        navController.navigate(AppDestinations.Main.MY_TASKS) {
                             launchSingleTop = true
                         }
                     },
-                    onProfileClick = {
-                        navController.navigate(AppDestinations.Main.PROFILE) {
-                            launchSingleTop = true
-                        }
+                    onDrafts = {
+                        // TODO: Navigate to drafts
                     },
-                    onSearchClick = {
-                        // TODO: Navigate to search screen
+                    onTemplates = {
+                        // TODO: Navigate to templates
                     },
-                    onReportsClick = {
+                    onReports = {
                         navController.navigate(AppDestinations.Main.REPORTS) {
                             launchSingleTop = true
                         }
@@ -112,41 +109,69 @@ fun MainScreen(
                         navController.navigate(AppDestinations.Main.ROADMAP) {
                             launchSingleTop = true
                         }
+                    },
+                    onAnalytics = {
+                        navController.navigate(AppDestinations.Main.REPORTS) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onDepartments = {
+                        // TODO: Navigate to departments
+                    },
+                    onUsers = {
+                        // TODO: Navigate to users
+                    },
+                    onWorkflows = {
+                        // TODO: Navigate to workflows
+                    },
+                    onSettings = {
+                        navController.navigate(AppDestinations.Main.PROFILE) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNotifications = {
+                        navController.navigate(AppDestinations.Main.ALERTS) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onCalendar = {
+                        // TODO: Navigate to calendar
+                    },
+                    onArchive = {
+                        // TODO: Navigate to archive
                     }
                 )
             }
-
+            
             // Reports Screen - Analytics Dashboard
             composable(AppDestinations.Main.REPORTS) {
                 com.project.irequest.presentation.ui.reports.ReportsScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
-
+            
             // Board Screen - Kanban Board
             composable(AppDestinations.Main.BOARD) {
                 com.project.irequest.presentation.ui.board.BoardScreen(
                     onBack = { navController.navigateUp() },
                     onRequestClick = { requestId ->
-                        // [UPDATE] Điều hướng đến chi tiết yêu cầu từ Board
-                        navController.navigate("request_detail/$requestId")
+                        // TODO: Navigate to request details
                     }
                 )
             }
-
+            
             // Roadmap Screen - Project Timeline & Milestones
             composable(AppDestinations.Main.ROADMAP) {
                 com.project.irequest.presentation.ui.roadmap.RoadmapScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
-
+            
             // My Tasks Tab - Work Center for Processing Multi-Workflow Requests
             composable(AppDestinations.Main.MY_TASKS) {
                 MyTasksScreen(
                     onTaskClick = { taskId ->
-                        // [UPDATE] Điều hướng đến chi tiết yêu cầu từ My Tasks
-                        navController.navigate("request_detail/$taskId")
+                        // TODO: Navigate to task processing screen
                     },
                     onCreateRequest = {
                         // TODO: Navigate to create request screen
@@ -159,33 +184,19 @@ fun MainScreen(
                     }
                 )
             }
-
-            // Alerts Tab - Unified Notifications + Chat + SLA Warnings
+            
+            // Chat Tab - Messages & Conversations
             composable(AppDestinations.Main.ALERTS) {
-                AlertsScreen(
-                    onAlertClick = { alertId ->
-                        // [UPDATE] Điều hướng đến chi tiết từ thông báo
-                        // Giả định alertId map với requestId hoặc xử lý logic riêng
-                        navController.navigate("request_detail/$alertId")
+                ChatScreen(
+                    onChatClick = { chatId ->
+                        // TODO: Navigate to chat detail
                     },
-                    onMarkAllRead = {
-                        // TODO: Mark all alerts as read
+                    onNewChat = {
+                        // TODO: Create new chat
                     }
                 )
             }
-
-            // [NEW] Request Detail Screen - Global Route
-            composable(
-                route = "request_detail/{requestId}",
-                arguments = listOf(navArgument("requestId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val requestId = backStackEntry.arguments?.getString("requestId") ?: ""
-                RequestDetailScreen(
-                    requestId = requestId,
-                    onBackClick = { navController.navigateUp() }
-                )
-            }
-
+            
             // Profile Tab - User Settings and Management
             composable(AppDestinations.Main.PROFILE) {
                 ProfileScreen(
@@ -219,50 +230,84 @@ fun MainScreen(
                     }
                 )
             }
-
-            // ... (Các màn hình Profile giữ nguyên) ...
+            
+            // Edit Profile Screen
             composable(AppDestinations.Profile.EDIT) {
                 EditProfileScreen(
                     onBack = { navController.navigateUp() },
-                    onSave = { address, birthDate -> navController.navigateUp() }
+                    onSave = { address, birthDate ->
+                        // TODO: Save profile data to ViewModel
+                        navController.navigateUp()
+                    }
                 )
             }
+            
+            // Change Password Screen
             composable(AppDestinations.Profile.CHANGE_PASSWORD) {
                 ChangePasswordScreen(
                     onBack = { navController.navigateUp() },
-                    onChangePassword = { o, n, c -> navController.navigateUp() }
+                    onChangePassword = { oldPassword, newPassword, confirmPassword ->
+                        // TODO: Call change password API
+                        navController.navigateUp()
+                    }
                 )
             }
+            
+            // Settings Screen
             composable(AppDestinations.Profile.SETTINGS) {
                 SettingsScreen(
                     onBack = { navController.navigateUp() },
-                    onLanguageClick = { },
-                    onAboutClick = { }
+                    onLanguageClick = {
+                        // TODO: Show language selection dialog
+                    },
+                    onAboutClick = {
+                        // TODO: Navigate to about screen
+                    }
                 )
             }
+            
+            // Personal Info Screen
             composable(AppDestinations.Profile.PERSONAL_INFO) {
                 PersonalInfoScreen(
                     onBack = { navController.navigateUp() },
                     onEdit = { navController.navigate(AppDestinations.Profile.EDIT) }
                 )
             }
+            
+            // Terms of Service Screen
             composable(AppDestinations.Profile.TERMS_OF_SERVICE) {
-                TermsOfServiceScreen(onBack = { navController.navigateUp() })
+                TermsOfServiceScreen(
+                    onBack = { navController.navigateUp() }
+                )
             }
+            
+            // Privacy Policy Screen
             composable(AppDestinations.Profile.PRIVACY_POLICY) {
-                PrivacyPolicyScreen(onBack = { navController.navigateUp() })
+                PrivacyPolicyScreen(
+                    onBack = { navController.navigateUp() }
+                )
             }
+            
+            // Data Privacy Screen
             composable(AppDestinations.Profile.DATA_PRIVACY) {
-                DataPrivacyScreen(onBack = { navController.navigateUp() })
+                DataPrivacyScreen(
+                    onBack = { navController.navigateUp() }
+                )
             }
+            
+            // Security and Privacy Screen
             composable(AppDestinations.Profile.SECURITY_PRIVACY) {
                 SecurityPrivacyScreen(
                     onBack = { navController.navigateUp() },
                     onChangePassword = { navController.navigate(AppDestinations.Profile.CHANGE_PASSWORD) }
                 )
             }
+            
+            // Support and Help Screen
             composable(AppDestinations.Profile.SUPPORT_HELP) {
-                SupportHelpScreen(onBack = { navController.navigateUp() })
+                SupportHelpScreen(
+                    onBack = { navController.navigateUp() }
+                )
             }
         }
     }
@@ -275,36 +320,43 @@ private fun BottomNavigationBar(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-
+    
     NavigationBar(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 8.dp
     ) {
         BottomNavItem.items.forEach { item ->
-            val isSelected = currentDestination?.hierarchy?.any {
-                it.route == item.route
+            val isSelected = currentDestination?.hierarchy?.any { 
+                it.route == item.route 
             } == true
-
+            
             NavigationBarItem(
                 selected = isSelected,
                 onClick = {
                     navController.navigate(item.route) {
+                        // Pop back to the start destination (HOME) to avoid building up large stack
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
+                        // Avoid multiple copies of the same destination
                         launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
                 },
                 icon = {
+                    // Add badges for My Tasks and Alerts
                     when (item) {
                         is BottomNavItem.MyTasks -> {
                             BadgedBox(
                                 badge = {
+                                    // TODO: Get actual pending task count from ViewModel
                                     val pendingTaskCount = 8
                                     if (pendingTaskCount > 0) {
-                                        Badge { Text(text = pendingTaskCount.toString()) }
+                                        Badge {
+                                            Text(text = pendingTaskCount.toString())
+                                        }
                                     }
                                 }
                             ) {
@@ -317,9 +369,12 @@ private fun BottomNavigationBar(
                         is BottomNavItem.Alerts -> {
                             BadgedBox(
                                 badge = {
-                                    val alertCount = 12
-                                    if (alertCount > 0) {
-                                        Badge { Text(text = alertCount.toString()) }
+                                    // TODO: Get unread message count from ViewModel
+                                    val unreadCount = 3
+                                    if (unreadCount > 0) {
+                                        Badge {
+                                            Text(text = unreadCount.toString())
+                                        }
                                     }
                                 }
                             ) {

@@ -6,6 +6,8 @@ plugins {
     //alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
     id("com.diffplug.spotless")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 spotless {
@@ -115,6 +117,16 @@ dependencies {
     
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
+    
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     
     // Image Loading
     implementation(libs.coil.compose)
