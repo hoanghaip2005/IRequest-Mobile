@@ -1,3 +1,4 @@
+
 package com.project.irequest.presentation.navigation
 
 /**
@@ -7,7 +8,7 @@ package com.project.irequest.presentation.navigation
  * Routes correspond to Controllers and Actions in ASP.NET MVC
  */
 
-object AppDestinations {
+object AppDestinations {    
     
     // =====================================
     // 🔐 AUTHENTICATION DESTINATIONS
@@ -184,8 +185,8 @@ object AppDestinations {
     // =====================================
     
     object Chat {
-        const val ROOMS_LIST = "chat/rooms"                     // → ChatController.Index()
-        const val ROOM = "chat/rooms/{roomId}"                  // → ChatController.Room(id)
+        const val ChatListScreen = "chat/rooms"                     // → ChatController.Index()
+        const val ChatDetailScreen = "chat/rooms/{roomId}"                  // → ChatController.Room(id)
         const val CREATE_ROOM = "chat/create-room"             // → ChatController.CreateRoom()
         const val ROOM_SETTINGS = "chat/rooms/{roomId}/settings" // Room management
         
