@@ -3,8 +3,8 @@ package com.project.irequest.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.project.irequest.di.FirebaseModule
-import com.project.irequest.presentation.ui.calendar.CalendarEvent
-import com.project.irequest.presentation.ui.calendar.EventType
+import com.project.irequest.presentation.ui.calendar.CalendarRequest
+import com.project.irequest.presentation.ui.calendar.RequestType
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.ZoneId
@@ -15,7 +15,7 @@ class CalendarRepository {
     private val firestore: FirebaseFirestore = FirebaseModule.getFirestore()
     
     companion object {
-        private const val COLLECTION_EVENTS = "calendar_events"
+        private const val COLLECTION_REQUESTS = "requests"
         
         @Volatile
         private var instance: CalendarRepository? = null
@@ -28,46 +28,72 @@ class CalendarRepository {
     }
 
     /**
-     * Get events for a specific date
+     * Get requests for a specific date
      */
-    suspend fun getEventsByDate(date: LocalDate): Result<List<CalendarEvent>> {
+    suspend fun getRequestsByDate(date: LocalDate): Result<List<CalendarRequest>> {
         return try {
             val startOfDay = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant())
             val endOfDay = Date.from(date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
-            val snapshot = firestore.collection(COLLECTION_EVENTS)
-                .whereGreaterThanOrEqualTo("date", startOfDay)
-                .whereLessThan("date", endOfDay)
-                .orderBy("date", Query.Direction.ASCENDING)
+            val snapshot = firestore.collection(COLLECTION_REQUESTS)
+                .whereGreaterThanOrEqualTo("createdAt", startOfDay)
+                .whereLessThan("createdAt", endOfDay)
+                .orderBy("createdAt", Query.Direction.ASCENDING)
                 .get()
                 .await()
 
-            val events = snapshot.documents.mapNotNull { doc ->
+            val requests = snapshot.documents.mapNotNull { doc ->
                 try {
-                    CalendarEvent(
+                    val title = doc.getString("title") ?: "Untitled Request"
+                    val createdAt = doc.getTimestamp("createdAt")?.toDate()
+                    val timeString = createdAt?.let {
+                        val calendar = java.util.Calendar.getInstance()
+                        calendar.time = it
+                        String.format("%02d:%02d", calendar.get(java.util.Calendar.HOUR_OF_DAY), calendar.get(java.util.Calendar.MINUTE))
+                    } ?: "--:--"
+                    
+                    val statusName = doc.getString("statusName") ?: "Pending"
+                    val priorityName = doc.getString("priorityName") ?: "Normal"
+                    
+                    // Determine type based on status or priority
+                    val type = when {
+                        statusName.contains("Approved", ignoreCase = true) -> RequestType.TASK
+                        priorityName.contains("High", ignoreCase = true) || priorityName.contains("Urgent", ignoreCase = true) -> RequestType.DEADLINE
+                        else -> RequestType.TASK
+                    }
+                    
+                    // Color based on priority
+                    val color = when {
+                        priorityName.contains("High", ignoreCase = true) || priorityName.contains("Urgent", ignoreCase = true) -> 
+                            androidx.compose.ui.graphics.Color(0xFFDC2626) // Red
+                        priorityName.contains("Low", ignoreCase = true) -> 
+                            androidx.compose.ui.graphics.Color(0xFF16A34A) // Green
+                        else -> 
+                            androidx.compose.ui.graphics.Color(0xFF2563EB) // Blue
+                    }
+                    
+                    CalendarRequest(
                         id = doc.id,
-                        title = doc.getString("title") ?: "",
-                        time = doc.getString("time") ?: "",
-                        type = EventType.valueOf(doc.getString("type") ?: "MEETING"),
-                        color = androidx.compose.ui.graphics.Color(
-                            doc.getLong("color")?.toInt() ?: 0xFF2563EB.toInt()
-                        )
+                        title = title,
+                        time = timeString,
+                        type = type,
+                        color = color
                     )
                 } catch (e: Exception) {
                     null
                 }
             }
 
-            Result.success(events)
+            Result.success(requests)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     /**
-     * Get events for a month
+     * Get requests for a month
      */
-    suspend fun getEventsByMonth(year: Int, month: Int): Result<Map<LocalDate, List<CalendarEvent>>> {
+    suspend fun getRequestsByMonth(year: Int, month: Int): Result<Map<LocalDate, List<CalendarRequest>>> {
         return try {
             val startOfMonth = LocalDate.of(year, month, 1)
             val endOfMonth = startOfMonth.plusMonths(1)
@@ -75,57 +101,83 @@ class CalendarRepository {
             val startDate = Date.from(startOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant())
             val endDate = Date.from(endOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant())
 
-            val snapshot = firestore.collection(COLLECTION_EVENTS)
-                .whereGreaterThanOrEqualTo("date", startDate)
-                .whereLessThan("date", endDate)
-                .orderBy("date", Query.Direction.ASCENDING)
+            val snapshot = firestore.collection(COLLECTION_REQUESTS)
+                .whereGreaterThanOrEqualTo("createdAt", startDate)
+                .whereLessThan("createdAt", endDate)
+                .orderBy("createdAt", Query.Direction.ASCENDING)
                 .get()
                 .await()
 
-            val eventsMap = mutableMapOf<LocalDate, MutableList<CalendarEvent>>()
+            val requestsMap = mutableMapOf<LocalDate, MutableList<CalendarRequest>>()
 
             snapshot.documents.forEach { doc ->
                 try {
-                    val timestamp = doc.getTimestamp("date")
-                    val eventDate = timestamp?.toDate()?.toInstant()
+                    val timestamp = doc.getTimestamp("createdAt")
+                    val requestDate = timestamp?.toDate()?.toInstant()
                         ?.atZone(ZoneId.systemDefault())?.toLocalDate()
 
-                    if (eventDate != null) {
-                        val event = CalendarEvent(
+                    if (requestDate != null) {
+                        val title = doc.getString("title") ?: "Untitled Request"
+                        val createdAt = timestamp.toDate()
+                        val timeString = createdAt.let {
+                            val calendar = java.util.Calendar.getInstance()
+                            calendar.time = it
+                            String.format("%02d:%02d", calendar.get(java.util.Calendar.HOUR_OF_DAY), calendar.get(java.util.Calendar.MINUTE))
+                        }
+                        
+                        val statusName = doc.getString("statusName") ?: "Pending"
+                        val priorityName = doc.getString("priorityName") ?: "Normal"
+                        
+                        // Determine type based on status or priority
+                        val type = when {
+                            statusName.contains("Approved", ignoreCase = true) -> RequestType.TASK
+                            priorityName.contains("High", ignoreCase = true) || priorityName.contains("Urgent", ignoreCase = true) -> RequestType.DEADLINE
+                            else -> RequestType.TASK
+                        }
+                        
+                        // Color based on priority
+                        val color = when {
+                            priorityName.contains("High", ignoreCase = true) || priorityName.contains("Urgent", ignoreCase = true) -> 
+                                androidx.compose.ui.graphics.Color(0xFFDC2626) // Red
+                            priorityName.contains("Low", ignoreCase = true) -> 
+                                androidx.compose.ui.graphics.Color(0xFF16A34A) // Green
+                            else -> 
+                                androidx.compose.ui.graphics.Color(0xFF2563EB) // Blue
+                        }
+                        
+                        val request = CalendarRequest(
                             id = doc.id,
-                            title = doc.getString("title") ?: "",
-                            time = doc.getString("time") ?: "",
-                            type = EventType.valueOf(doc.getString("type") ?: "MEETING"),
-                            color = androidx.compose.ui.graphics.Color(
-                                doc.getLong("color")?.toInt() ?: 0xFF2563EB.toInt()
-                            )
+                            title = title,
+                            time = timeString,
+                            type = type,
+                            color = color
                         )
 
-                        eventsMap.getOrPut(eventDate) { mutableListOf() }.add(event)
+                        requestsMap.getOrPut(requestDate) { mutableListOf() }.add(request)
                     }
                 } catch (e: Exception) {
-                    // Skip invalid events
+                    // Skip invalid requests
                 }
             }
 
-            Result.success(eventsMap)
+            Result.success(requestsMap)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     /**
-     * Add a new calendar event
+     * Add a new calendar request
      */
-    suspend fun addEvent(
+    suspend fun addRequest(
         title: String,
         date: LocalDate,
         time: String,
-        type: EventType,
+        type: RequestType,
         color: androidx.compose.ui.graphics.Color
     ): Result<String> {
         return try {
-            val eventData = hashMapOf(
+            val requestData = hashMapOf(
                 "title" to title,
                 "date" to Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                 "time" to time,
@@ -134,8 +186,8 @@ class CalendarRepository {
                 "createdAt" to Date()
             )
 
-            val docRef = firestore.collection(COLLECTION_EVENTS)
-                .add(eventData)
+            val docRef = firestore.collection(COLLECTION_REQUESTS)
+                .add(requestData)
                 .await()
 
             Result.success(docRef.id)
@@ -145,12 +197,12 @@ class CalendarRepository {
     }
 
     /**
-     * Delete an event
+     * Delete a request
      */
-    suspend fun deleteEvent(eventId: String): Result<Unit> {
+    suspend fun deleteRequest(requestId: String): Result<Unit> {
         return try {
-            firestore.collection(COLLECTION_EVENTS)
-                .document(eventId)
+            firestore.collection(COLLECTION_REQUESTS)
+                .document(requestId)
                 .delete()
                 .await()
 

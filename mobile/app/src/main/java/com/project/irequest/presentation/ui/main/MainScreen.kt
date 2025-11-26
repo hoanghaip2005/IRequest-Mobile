@@ -458,33 +458,15 @@ private fun BottomNavigationBar(
                     // Update current tab
                     onTabChange(item.route)
                     
-                    // If already on this tab, do nothing
-                    if (item.route == currentDestination?.route) {
-                        return@NavigationBarItem
-                    }
-                    
-                    // Define bottom nav routes
-                    val bottomNavRoutes = listOf(
-                        AppDestinations.Main.HOME,
-                        AppDestinations.Main.MY_TASKS,
-                        AppDestinations.Main.ALERTS,
-                        AppDestinations.Main.PROFILE
-                    )
-                    
-                    // Clear all nested screens by popping back to a bottom nav tab or HOME
-                    while (navController.currentDestination?.route !in bottomNavRoutes &&
-                           navController.previousBackStackEntry != null) {
-                        navController.popBackStack()
-                    }
-                    
                     // Navigate to the selected bottom tab
                     navController.navigate(item.route) {
-                        // Pop back to HOME but keep it in stack
-                        popUpTo(AppDestinations.Main.HOME) {
+                        // Pop up to the start destination to avoid building up large stack
+                        popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
-                            inclusive = false
                         }
+                        // Avoid multiple copies of the same destination
                         launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
                 },

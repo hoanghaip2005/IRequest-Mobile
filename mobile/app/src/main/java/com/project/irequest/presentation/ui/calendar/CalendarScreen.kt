@@ -46,49 +46,55 @@ fun CalendarScreen(
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
     val uiState by viewModel.uiState.collectAsState()
-    val selectedDateEvents by viewModel.selectedDateEvents.collectAsState()
-    val monthEvents by viewModel.monthEvents.collectAsState()
+    val selectedDateRequests by viewModel.selectedDateRequests.collectAsState()
+    val monthRequests by viewModel.monthRequests.collectAsState()
 
-    // Load events when month changes
+    // Load requests when month changes
     LaunchedEffect(currentMonth) {
-        viewModel.loadMonthEvents(currentMonth)
+        viewModel.loadMonthRequests(currentMonth)
     }
 
-    // Load events when date is selected
+    // Load requests when date is selected
     LaunchedEffect(selectedDate) {
-        viewModel.loadEventsByDate(selectedDate)
+        viewModel.loadRequestsByDate(selectedDate)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        text = "Calendar",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryBlue,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Custom TopBar using Surface
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = PrimaryBlue,
+            shadowElevation = 4.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                
+                Text(
+                    text = "Calendar",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.padding(start = 8.dp)
                 )
-            )
+            }
         }
-    ) { paddingValues ->
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .background(Color(0xFFFAFAFA))
         ) {
             // Month Selector
@@ -103,7 +109,7 @@ fun CalendarScreen(
                 currentMonth = currentMonth,
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it },
-                monthEvents = monthEvents
+                monthRequests = monthRequests
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -135,10 +141,10 @@ fun CalendarScreen(
                     }
                 }
                 is CalendarUiState.Success -> {
-                    // Events List
-                    EventsList(
+                    // Requests List
+                    RequestsList(
                         selectedDate = selectedDate,
-                        events = selectedDateEvents,
+                        requests = selectedDateRequests,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -196,7 +202,7 @@ private fun CalendarGrid(
     currentMonth: YearMonth,
     selectedDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
-    monthEvents: Map<LocalDate, List<CalendarEvent>>
+    monthRequests: Map<LocalDate, List<CalendarRequest>>
 ) {
     Surface(
         modifier = Modifier
@@ -245,7 +251,7 @@ private fun CalendarGrid(
                             val date = currentMonth.atDay(dayCounter)
                             val isSelected = date == selectedDate
                             val isToday = date == LocalDate.now()
-                            val hasEvents = monthEvents[date]?.isNotEmpty() == true
+                            val hasRequests = monthRequests[date]?.isNotEmpty() == true
 
                             Box(
                                 modifier = Modifier
@@ -280,8 +286,8 @@ private fun CalendarGrid(
                                     )
                                 }
                                 
-                                // Event indicator dot
-                                if (hasEvents && !isSelected) {
+                                // Request indicator dot
+                                if (hasRequests && !isSelected) {
                                     Box(
                                         modifier = Modifier
                                             .align(Alignment.BottomCenter)
@@ -304,9 +310,9 @@ private fun CalendarGrid(
 }
 
 @Composable
-private fun EventsList(
+private fun RequestsList(
     selectedDate: LocalDate,
-    events: List<CalendarEvent>,
+    requests: List<CalendarRequest>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -315,14 +321,14 @@ private fun EventsList(
             .padding(horizontal = 16.dp)
     ) {
         Text(
-            text = "Events on ${selectedDate.dayOfMonth} ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())}",
+            text = "Requests on ${selectedDate.dayOfMonth} ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())}",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF101828),
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        if (events.isEmpty()) {
+        if (requests.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -330,7 +336,7 @@ private fun EventsList(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No events scheduled",
+                    text = "No requests scheduled",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF667085)
                 )
@@ -339,8 +345,8 @@ private fun EventsList(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(events) { event ->
-                    EventCard(event = event)
+                items(requests) { request ->
+                    RequestCard(request = request)
                 }
             }
         }
@@ -348,7 +354,7 @@ private fun EventsList(
 }
 
 @Composable
-private fun EventCard(event: CalendarEvent) {
+private fun RequestCard(request: CalendarRequest) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color.White,
@@ -361,19 +367,19 @@ private fun EventCard(event: CalendarEvent) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Event type indicator
+            // Request type indicator
             Box(
                 modifier = Modifier
                     .width(4.dp)
                     .height(48.dp)
-                    .background(event.color, RoundedCornerShape(2.dp))
+                    .background(request.color, RoundedCornerShape(2.dp))
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = event.title,
+                    text = request.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF101828)
@@ -383,19 +389,19 @@ private fun EventCard(event: CalendarEvent) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = event.time,
+                        text = request.time,
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF667085)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Surface(
-                        color = event.color.copy(alpha = 0.1f),
+                        color = request.color.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
-                            text = event.type.name,
+                            text = request.type.name,
                             style = MaterialTheme.typography.labelSmall,
-                            color = event.color,
+                            color = request.color,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
@@ -406,15 +412,15 @@ private fun EventCard(event: CalendarEvent) {
 }
 
 // Data classes
-data class CalendarEvent(
+data class CalendarRequest(
     val id: String,
     val title: String,
     val time: String,
-    val type: EventType,
+    val type: RequestType,
     val color: Color
 )
 
-enum class EventType {
+enum class RequestType {
     MEETING,
     DEADLINE,
     REMINDER,

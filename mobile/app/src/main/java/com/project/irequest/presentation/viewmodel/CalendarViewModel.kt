@@ -3,7 +3,7 @@ package com.project.irequest.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.irequest.data.repository.CalendarRepository
-import com.project.irequest.presentation.ui.calendar.CalendarEvent
+import com.project.irequest.presentation.ui.calendar.CalendarRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,60 +18,60 @@ class CalendarViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<CalendarUiState>(CalendarUiState.Loading)
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
-    private val _selectedDateEvents = MutableStateFlow<List<CalendarEvent>>(emptyList())
-    val selectedDateEvents: StateFlow<List<CalendarEvent>> = _selectedDateEvents.asStateFlow()
+    private val _selectedDateRequests = MutableStateFlow<List<CalendarRequest>>(emptyList())
+    val selectedDateRequests: StateFlow<List<CalendarRequest>> = _selectedDateRequests.asStateFlow()
 
-    private val _monthEvents = MutableStateFlow<Map<LocalDate, List<CalendarEvent>>>(emptyMap())
-    val monthEvents: StateFlow<Map<LocalDate, List<CalendarEvent>>> = _monthEvents.asStateFlow()
+    private val _monthRequests = MutableStateFlow<Map<LocalDate, List<CalendarRequest>>>(emptyMap())
+    val monthRequests: StateFlow<Map<LocalDate, List<CalendarRequest>>> = _monthRequests.asStateFlow()
 
     /**
-     * Load events for a specific month
+     * Load requests for a specific month
      */
-    fun loadMonthEvents(yearMonth: YearMonth) {
+    fun loadMonthRequests(yearMonth: YearMonth) {
         viewModelScope.launch {
             _uiState.value = CalendarUiState.Loading
 
-            calendarRepository.getEventsByMonth(yearMonth.year, yearMonth.monthValue)
-                .onSuccess { events ->
-                    _monthEvents.value = events
+            calendarRepository.getRequestsByMonth(yearMonth.year, yearMonth.monthValue)
+                .onSuccess { requests ->
+                    _monthRequests.value = requests
                     _uiState.value = CalendarUiState.Success
                 }
                 .onFailure { error ->
                     _uiState.value = CalendarUiState.Error(
-                        error.message ?: "Failed to load events"
+                        error.message ?: "Failed to load requests"
                     )
                 }
         }
     }
 
     /**
-     * Load events for a specific date
+     * Load requests for a specific date
      */
-    fun loadEventsByDate(date: LocalDate) {
+    fun loadRequestsByDate(date: LocalDate) {
         viewModelScope.launch {
-            calendarRepository.getEventsByDate(date)
-                .onSuccess { events ->
-                    _selectedDateEvents.value = events
+            calendarRepository.getRequestsByDate(date)
+                .onSuccess { requests ->
+                    _selectedDateRequests.value = requests
                 }
                 .onFailure { error ->
-                    // Keep existing events on error
-                    _selectedDateEvents.value = emptyList()
+                    // Keep existing requests on error
+                    _selectedDateRequests.value = emptyList()
                 }
         }
     }
 
     /**
-     * Get events count for a specific date (for calendar grid indicators)
+     * Get requests count for a specific date (for calendar grid indicators)
      */
-    fun getEventsCountForDate(date: LocalDate): Int {
-        return _monthEvents.value[date]?.size ?: 0
+    fun getRequestsCountForDate(date: LocalDate): Int {
+        return _monthRequests.value[date]?.size ?: 0
     }
 
     /**
-     * Check if a date has events
+     * Check if a date has requests
      */
-    fun hasEvents(date: LocalDate): Boolean {
-        return _monthEvents.value[date]?.isNotEmpty() == true
+    fun hasRequests(date: LocalDate): Boolean {
+        return _monthRequests.value[date]?.isNotEmpty() == true
     }
 }
 
