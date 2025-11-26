@@ -27,7 +27,9 @@ import androidx.navigation.navArgument
 import com.project.irequest.presentation.navigation.AppDestinations
 import com.project.irequest.presentation.navigation.BottomNavItem
 import com.project.irequest.presentation.theme.PrimaryBlue
+// Import cả Chat và Alerts
 import com.project.irequest.presentation.ui.chat.ChatScreen
+import com.project.irequest.presentation.ui.alerts.AlertsScreen
 import com.project.irequest.presentation.ui.home.HomeScreenComplete
 import com.project.irequest.presentation.ui.mytasks.MyTasksScreen
 import com.project.irequest.presentation.ui.profile.ProfileScreen
@@ -42,6 +44,7 @@ import com.project.irequest.presentation.ui.profile.SecurityPrivacyScreen
 import com.project.irequest.presentation.ui.profile.SupportHelpScreen
 // Import màn hình chi tiết mới tạo
 import com.project.irequest.presentation.ui.requests.detail.RequestDetailScreen
+
 
 /**
  * Main Screen with Bottom Navigation
@@ -58,7 +61,7 @@ fun MainScreen(
     onNavigateToDetail: (String) -> Unit = {}
 ) {
     val navController = rememberNavController()
-    
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(navController = navController)
@@ -129,8 +132,9 @@ fun MainScreen(
                             launchSingleTop = true
                         }
                     },
+                    // SỬA: Nút Notification (Chuông) sẽ dẫn đến route riêng là "system_alerts"
                     onNotifications = {
-                        navController.navigate(AppDestinations.Main.ALERTS) {
+                        navController.navigate("system_alerts") {
                             launchSingleTop = true
                         }
                     },
@@ -142,14 +146,14 @@ fun MainScreen(
                     }
                 )
             }
-            
+
             // Reports Screen - Analytics Dashboard
             composable(AppDestinations.Main.REPORTS) {
                 com.project.irequest.presentation.ui.reports.ReportsScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
-            
+
             // Board Screen - Kanban Board
             composable(AppDestinations.Main.BOARD) {
                 com.project.irequest.presentation.ui.board.BoardScreen(
@@ -159,14 +163,14 @@ fun MainScreen(
                     }
                 )
             }
-            
+
             // Roadmap Screen - Project Timeline & Milestones
             composable(AppDestinations.Main.ROADMAP) {
                 com.project.irequest.presentation.ui.roadmap.RoadmapScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
-            
+
             // My Tasks Tab - Work Center for Processing Multi-Workflow Requests
             composable(AppDestinations.Main.MY_TASKS) {
                 MyTasksScreen(
@@ -184,8 +188,9 @@ fun MainScreen(
                     }
                 )
             }
-            
+
             // Chat Tab - Messages & Conversations
+            // SỬA: Khôi phục lại ChatScreen ở đây để Tab dưới đáy hiện Chat
             composable(AppDestinations.Main.ALERTS) {
                 ChatScreen(
                     onChatClick = { chatId ->
@@ -196,7 +201,19 @@ fun MainScreen(
                     }
                 )
             }
-            
+
+            // SỬA: Thêm route mới dành riêng cho màn hình Thông báo (Alerts)
+            composable("system_alerts") {
+                AlertsScreen(
+                    onAlertClick = { alertId ->
+                        // TODO: Navigate to detail based on alert
+                    },
+                    onMarkAllRead = {
+                        // TODO: Mark all read logic
+                    }
+                )
+            }
+
             // Profile Tab - User Settings and Management
             composable(AppDestinations.Main.PROFILE) {
                 ProfileScreen(
@@ -230,7 +247,7 @@ fun MainScreen(
                     }
                 )
             }
-            
+
             // Edit Profile Screen
             composable(AppDestinations.Profile.EDIT) {
                 EditProfileScreen(
@@ -241,7 +258,7 @@ fun MainScreen(
                     }
                 )
             }
-            
+
             // Change Password Screen
             composable(AppDestinations.Profile.CHANGE_PASSWORD) {
                 ChangePasswordScreen(
@@ -252,7 +269,7 @@ fun MainScreen(
                     }
                 )
             }
-            
+
             // Settings Screen
             composable(AppDestinations.Profile.SETTINGS) {
                 SettingsScreen(
@@ -265,7 +282,7 @@ fun MainScreen(
                     }
                 )
             }
-            
+
             // Personal Info Screen
             composable(AppDestinations.Profile.PERSONAL_INFO) {
                 PersonalInfoScreen(
@@ -273,28 +290,28 @@ fun MainScreen(
                     onEdit = { navController.navigate(AppDestinations.Profile.EDIT) }
                 )
             }
-            
+
             // Terms of Service Screen
             composable(AppDestinations.Profile.TERMS_OF_SERVICE) {
                 TermsOfServiceScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
-            
+
             // Privacy Policy Screen
             composable(AppDestinations.Profile.PRIVACY_POLICY) {
                 PrivacyPolicyScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
-            
+
             // Data Privacy Screen
             composable(AppDestinations.Profile.DATA_PRIVACY) {
                 DataPrivacyScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
-            
+
             // Security and Privacy Screen
             composable(AppDestinations.Profile.SECURITY_PRIVACY) {
                 SecurityPrivacyScreen(
@@ -302,7 +319,7 @@ fun MainScreen(
                     onChangePassword = { navController.navigate(AppDestinations.Profile.CHANGE_PASSWORD) }
                 )
             }
-            
+
             // Support and Help Screen
             composable(AppDestinations.Profile.SUPPORT_HELP) {
                 SupportHelpScreen(
@@ -320,17 +337,17 @@ private fun BottomNavigationBar(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    
+
     NavigationBar(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 8.dp
     ) {
         BottomNavItem.items.forEach { item ->
-            val isSelected = currentDestination?.hierarchy?.any { 
-                it.route == item.route 
+            val isSelected = currentDestination?.hierarchy?.any {
+                it.route == item.route
             } == true
-            
+
             NavigationBarItem(
                 selected = isSelected,
                 onClick = {
@@ -367,6 +384,7 @@ private fun BottomNavigationBar(
                             }
                         }
                         is BottomNavItem.Alerts -> {
+                            // Badge cho Tab Chat (Item Alerts cũ)
                             BadgedBox(
                                 badge = {
                                     // TODO: Get unread message count from ViewModel
