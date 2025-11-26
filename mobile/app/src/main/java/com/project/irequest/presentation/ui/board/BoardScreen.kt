@@ -28,13 +28,6 @@ import com.project.irequest.presentation.theme.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-/**
- * Kanban Board Screen
- * - Visual workflow management
- * - Drag & drop cards (future enhancement)
- * - Status columns: Backlog, To Do, In Progress, Review, Done
- * - Quick filters
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BoardScreen(
@@ -57,6 +50,14 @@ fun BoardScreen(
     var inProgressRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
     var reviewRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
     var doneRequests by remember { mutableStateOf<List<Request>>(emptyList()) }
+    
+    // Card action states
+    var selectedRequest by remember { mutableStateOf<Request?>(null) }
+    var showCardDetailDialog by remember { mutableStateOf(false) }
+    var showAddCardDialog by remember { mutableStateOf(false) }
+    var showEditCardDialog by remember { mutableStateOf(false) }
+    var showDeleteCardDialog by remember { mutableStateOf(false) }
+    var addCardToColumn by remember { mutableStateOf("") }
     
     val scope = rememberCoroutineScope()
     
@@ -134,6 +135,58 @@ fun BoardScreen(
             }
         )
     }
+    
+    // Card Detail Dialog
+    if (showCardDetailDialog && selectedRequest != null) {
+        CardDetailDialog(
+            request = selectedRequest!!,
+            onDismiss = { showCardDetailDialog = false },
+            onEdit = {
+                showCardDetailDialog = false
+                showEditCardDialog = true
+            },
+            onDelete = {
+                showCardDetailDialog = false
+                showDeleteCardDialog = true
+            }
+        )
+    }
+    
+    // Add Card Dialog
+    if (showAddCardDialog) {
+        AddCardDialog(
+            columnTitle = addCardToColumn,
+            onDismiss = { showAddCardDialog = false },
+            onConfirm = { title, description, priority ->
+                // TODO: Add card to Firebase
+                showAddCardDialog = false
+            }
+        )
+    }
+    
+    // Edit Card Dialog
+    if (showEditCardDialog && selectedRequest != null) {
+        EditCardDialog(
+            request = selectedRequest!!,
+            onDismiss = { showEditCardDialog = false },
+            onConfirm = { title, description, priority ->
+                // TODO: Update card in Firebase
+                showEditCardDialog = false
+            }
+        )
+    }
+    
+    // Delete Card Dialog
+    if (showDeleteCardDialog && selectedRequest != null) {
+        DeleteCardDialog(
+            request = selectedRequest!!,
+            onDismiss = { showDeleteCardDialog = false },
+            onConfirm = {
+                // TODO: Delete card from Firebase
+                showDeleteCardDialog = false
+            }
+        )
+    }
     Scaffold(
         topBar = {
             // Custom TopAppBar với chiều cao tự động
@@ -164,16 +217,11 @@ fun BoardScreen(
                             .padding(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = "Kanban Board",
+                            text = "Công việc của tôi",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold
                             ),
                             color = Color(0xFF101828)
-                        )
-                        Text(
-                            text = "Visualize your workflow",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF667085)
                         )
                     }
                     
@@ -221,7 +269,14 @@ fun BoardScreen(
                             count = backlogRequests.size,
                             color = Color(0xFF6B7280),
                             requests = backlogRequests,
-                            onCardClick = { request -> onRequestClick(request.requestId) }
+                            onCardClick = { request ->
+                                selectedRequest = request
+                                showCardDetailDialog = true
+                            },
+                            onAddCard = {
+                                addCardToColumn = "Backlog"
+                                showAddCardDialog = true
+                            }
                         )
                     }
                     
@@ -232,7 +287,14 @@ fun BoardScreen(
                             count = todoRequests.size,
                             color = PrimaryBlue,
                             requests = todoRequests,
-                            onCardClick = { request -> onRequestClick(request.requestId) }
+                            onCardClick = { request ->
+                                selectedRequest = request
+                                showCardDetailDialog = true
+                            },
+                            onAddCard = {
+                                addCardToColumn = "To Do"
+                                showAddCardDialog = true
+                            }
                         )
                     }
                     
@@ -243,7 +305,14 @@ fun BoardScreen(
                             count = inProgressRequests.size,
                             color = CustomOrange,
                             requests = inProgressRequests,
-                            onCardClick = { request -> onRequestClick(request.requestId) }
+                            onCardClick = { request ->
+                                selectedRequest = request
+                                showCardDetailDialog = true
+                            },
+                            onAddCard = {
+                                addCardToColumn = "In Progress"
+                                showAddCardDialog = true
+                            }
                         )
                     }
                     
@@ -254,7 +323,14 @@ fun BoardScreen(
                             count = reviewRequests.size,
                             color = Color(0xFF8B5CF6),
                             requests = reviewRequests,
-                            onCardClick = { request -> onRequestClick(request.requestId) }
+                            onCardClick = { request ->
+                                selectedRequest = request
+                                showCardDetailDialog = true
+                            },
+                            onAddCard = {
+                                addCardToColumn = "Review"
+                                showAddCardDialog = true
+                            }
                         )
                     }
                     
@@ -265,7 +341,14 @@ fun BoardScreen(
                             count = doneRequests.size,
                             color = CustomGreen,
                             requests = doneRequests,
-                            onCardClick = { request -> onRequestClick(request.requestId) }
+                            onCardClick = { request ->
+                                selectedRequest = request
+                                showCardDetailDialog = true
+                            },
+                            onAddCard = {
+                                addCardToColumn = "Done"
+                                showAddCardDialog = true
+                            }
                         )
                     }
                 }
@@ -280,7 +363,8 @@ private fun BoardColumn(
     count: Int,
     color: Color,
     requests: List<Request>,
-    onCardClick: (Request) -> Unit
+    onCardClick: (Request) -> Unit,
+    onAddCard: () -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -353,7 +437,7 @@ private fun BoardColumn(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { /* Add card */ },
+                            .clickable(onClick = onAddCard),
                         shape = RoundedCornerShape(8.dp),
                         color = Color(0xFFF9FAFB),
                         border = androidx.compose.foundation.BorderStroke(

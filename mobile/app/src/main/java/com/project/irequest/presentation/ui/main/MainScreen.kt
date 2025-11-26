@@ -72,30 +72,25 @@ fun MainScreen(
                     onCreateRequest = {
                         // TODO: Navigate to create request
                     },
-                    onMyTasks = {
+                    onMyRequests = {
                         // Navigate to My Tasks tab
                         navController.navigate(AppDestinations.Main.MY_TASKS) {
                             launchSingleTop = true
                         }
                     },
-                    onRequestClick = { requestId ->
-                        // TODO: Navigate to request details
-                    },
-                    onNotificationClick = {
-                        // Navigate to Chat tab
-                        navController.navigate(AppDestinations.Main.ALERTS) {
+                    onAssignedToMe = {
+                        // Navigate to My Tasks tab
+                        navController.navigate(AppDestinations.Main.MY_TASKS) {
                             launchSingleTop = true
                         }
                     },
-                    onProfileClick = {
-                        navController.navigate(AppDestinations.Main.PROFILE) {
-                            launchSingleTop = true
-                        }
+                    onDrafts = {
+                        // TODO: Navigate to drafts
                     },
-                    onSearchClick = {
-                        // TODO: Navigate to search screen
+                    onTemplates = {
+                        // TODO: Navigate to templates
                     },
-                    onReportsClick = {
+                    onReports = {
                         navController.navigate(AppDestinations.Main.REPORTS) {
                             launchSingleTop = true
                         }
@@ -109,6 +104,36 @@ fun MainScreen(
                         navController.navigate(AppDestinations.Main.ROADMAP) {
                             launchSingleTop = true
                         }
+                    },
+                    onAnalytics = {
+                        navController.navigate(AppDestinations.Main.REPORTS) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onDepartments = {
+                        // TODO: Navigate to departments
+                    },
+                    onUsers = {
+                        // TODO: Navigate to users
+                    },
+                    onWorkflows = {
+                        // TODO: Navigate to workflows
+                    },
+                    onSettings = {
+                        navController.navigate(AppDestinations.Main.PROFILE) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNotifications = {
+                        navController.navigate(AppDestinations.Main.ALERTS) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onCalendar = {
+                        // TODO: Navigate to calendar
+                    },
+                    onArchive = {
+                        // TODO: Navigate to archive
                     }
                 )
             }
@@ -305,13 +330,11 @@ private fun BottomNavigationBar(
                 selected = isSelected,
                 onClick = {
                     navController.navigate(item.route) {
-                        // Pop up to the start destination of the graph to
-                        // avoid building up a large stack of destinations
+                        // Pop back to the start destination (HOME) to avoid building up large stack
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
-                        // Avoid multiple copies of the same destination when
-                        // reselecting the same item
+                        // Avoid multiple copies of the same destination
                         launchSingleTop = true
                         // Restore state when reselecting a previously selected item
                         restoreState = true
