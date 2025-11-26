@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.project.irequest.presentation.navigation.AppDestinations
 import com.project.irequest.presentation.navigation.BottomNavItem
 import com.project.irequest.presentation.theme.PrimaryBlue
+import com.project.irequest.presentation.ui.calendar.CalendarScreen
 import com.project.irequest.presentation.ui.chat.ChatScreen
 import com.project.irequest.presentation.ui.home.HomeScreenComplete
 import com.project.irequest.presentation.ui.mytasks.MyTasksScreen
@@ -130,7 +131,9 @@ fun MainScreen(
                         }
                     },
                     onCalendar = {
-                        // TODO: Navigate to calendar
+                        navController.navigate(AppDestinations.Main.CALENDAR) {
+                            launchSingleTop = true
+                        }
                     },
                     onArchive = {
                         // TODO: Navigate to archive
@@ -158,6 +161,13 @@ fun MainScreen(
             // Roadmap Screen - Project Timeline & Milestones
             composable(AppDestinations.Main.ROADMAP) {
                 com.project.irequest.presentation.ui.roadmap.RoadmapScreen(
+                    onBack = { navController.navigateUp() }
+                )
+            }
+            
+            // Calendar Screen - Request Schedule & Events
+            composable(AppDestinations.Main.CALENDAR) {
+                CalendarScreen(
                     onBack = { navController.navigateUp() }
                 )
             }

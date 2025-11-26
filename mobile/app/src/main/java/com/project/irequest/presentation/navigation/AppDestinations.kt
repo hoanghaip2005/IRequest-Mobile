@@ -40,6 +40,7 @@ object AppDestinations {
         const val REPORTS = "main/reports"     // Analytics dashboard
         const val BOARD = "main/board"         // Kanban board
         const val ROADMAP = "main/roadmap"     // Project timeline & milestones
+        const val CALENDAR = "main/calendar"   // Request schedule & events
         
         // Legacy routes (kept for backward compatibility)
         @Deprecated("Use MY_TASKS instead")
