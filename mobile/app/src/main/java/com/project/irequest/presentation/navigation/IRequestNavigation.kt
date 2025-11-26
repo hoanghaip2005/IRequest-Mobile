@@ -9,6 +9,8 @@ import androidx.navigation.navArgument
 import com.project.irequest.presentation.ui.auth.LoginScreen
 import com.project.irequest.presentation.ui.auth.RegisterScreen
 import com.project.irequest.presentation.ui.auth.ForgotPasswordScreen
+import com.project.irequest.presentation.ui.employees.EmployeesScreen
+import com.project.irequest.presentation.ui.employees.EmployeeDetailScreen
 import com.project.irequest.presentation.ui.main.MainScreen
 import com.project.irequest.presentation.ui.requests.detail.RequestDetailScreen
 
@@ -58,6 +60,10 @@ fun IRequestNavigation(navController: NavHostController) {
                 // KẾT NỐI TỪ MAIN -> DETAIL
                 onNavigateToDetail = { requestId ->
                     navController.navigate("request_detail/$requestId")
+                },
+                // KẾT NỐI TỪ MAIN -> EMPLOYEES
+                onNavigateToEmployees = {
+                    navController.navigate(Routes.Main.Admin.EMPLOYEES)
                 }
             )
         }
@@ -71,6 +77,27 @@ fun IRequestNavigation(navController: NavHostController) {
             RequestDetailScreen(
                 requestId = requestId,
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+        
+        // --- EMPLOYEES MANAGEMENT ---
+        composable(Routes.Main.Admin.EMPLOYEES) {
+            EmployeesScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onEmployeeClick = { employee ->
+                    navController.navigate(Routes.Main.Admin.employeeDetails(employee.id))
+                }
+            )
+        }
+        
+        composable(
+            route = Routes.Main.Admin.EMPLOYEE_DETAILS,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val employeeId = backStackEntry.arguments?.getString("id") ?: ""
+            EmployeeDetailScreen(
+                employeeId = employeeId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

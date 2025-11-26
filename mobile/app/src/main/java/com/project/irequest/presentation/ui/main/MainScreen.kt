@@ -61,7 +61,8 @@ import com.project.irequest.presentation.ui.requests.detail.RequestDetailScreen
 @Suppress("FunctionName")
 fun MainScreen(
     onLogout: () -> Unit = {},
-    onNavigateToDetail: (String) -> Unit = {}
+    onNavigateToDetail: (String) -> Unit = {},
+    onNavigateToEmployees: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     var currentBottomTab by remember { mutableStateOf(AppDestinations.Main.HOME) }
@@ -154,6 +155,9 @@ fun MainScreen(
                     },
                     onArchive = {
                         // TODO: Navigate to archive
+                    },
+                    onEmployees = {
+                        onNavigateToEmployees()
                     }
                 )
             }
@@ -278,7 +282,8 @@ fun MainScreen(
                     },
                     onSupportHelp = {
                         navController.navigate(AppDestinations.Profile.SUPPORT_HELP)
-                    }
+                    },
+                    onEmployeeManagement = onNavigateToEmployees
                 )
             }
 

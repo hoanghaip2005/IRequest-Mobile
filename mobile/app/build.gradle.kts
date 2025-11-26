@@ -70,6 +70,16 @@ android {
         jvmTarget = "11"
     }
     
+    // KSP configuration for Room - disable schema verification on Windows
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+        arg("room.incremental", "true")
+        arg("room.expandProjection", "true")
+        arg("room.generateKotlin", "true")
+        // Fix SQLite native library error on Windows
+        arg("room.verifyDatabase", "false")
+    }
+    
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

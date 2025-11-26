@@ -92,6 +92,10 @@ sealed class Routes(val route: String) {
             const val USERS = "main/admin/users"           // User management
             const val ROLES = "main/admin/roles"           // Role management
             const val DEPARTMENTS_ADMIN = "main/admin/departments" // Department admin
+            const val EMPLOYEES = "main/admin/employees"   // Employee management
+            const val EMPLOYEE_DETAILS = "main/admin/employees/{id}" // Employee details
+            
+            fun employeeDetails(id: String) = "main/admin/employees/$id"
         }
         
         // Search & Filter

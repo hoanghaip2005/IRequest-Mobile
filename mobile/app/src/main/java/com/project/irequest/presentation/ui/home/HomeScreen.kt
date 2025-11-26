@@ -44,7 +44,8 @@ fun HomeScreenComplete(
     onSettings: () -> Unit = {},
     onNotifications: () -> Unit = {},
     onCalendar: () -> Unit = {},
-    onArchive: () -> Unit = {}
+    onArchive: () -> Unit = {},
+    onEmployees: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -113,7 +114,8 @@ fun HomeScreenComplete(
                 onSettings = onSettings,
                 onCalendar = onCalendar,
                 onArchive = onArchive,
-                onNotifications = onNotifications
+                onNotifications = onNotifications,
+                onEmployees = onEmployees
             )
         }
     }
@@ -147,7 +149,8 @@ private fun CompactFeatureGrid(
     onSettings: () -> Unit,
     onCalendar: () -> Unit,
     onArchive: () -> Unit,
-    onNotifications: () -> Unit
+    onNotifications: () -> Unit,
+    onEmployees: () -> Unit
 ) {
     val features = listOf(
         // Row 1
@@ -164,7 +167,7 @@ private fun CompactFeatureGrid(
         
         // Row 3
         FeatureItem("departments", "Departments", "🏢", onDepartments),
-        FeatureItem("users", "Users", "👥", onUsers),
+        FeatureItem("employees", "Employees", "👥", onEmployees),
         FeatureItem("workflows", "Workflows", "⚙️", onWorkflows),
         FeatureItem("templates", "Templates", "📄", onTemplates),
         

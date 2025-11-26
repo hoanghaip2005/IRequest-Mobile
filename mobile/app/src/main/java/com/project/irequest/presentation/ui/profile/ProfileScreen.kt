@@ -67,7 +67,8 @@ fun ProfileScreen(
     onPrivacyPolicy: () -> Unit = {},
     onDataPrivacy: () -> Unit = {},
     onSecurityPrivacy: () -> Unit = {},
-    onSupportHelp: () -> Unit = {}
+    onSupportHelp: () -> Unit = {},
+    onEmployeeManagement: () -> Unit = {}
 ) {
     var twoFactorEnabled by remember { mutableStateOf(false) }
     
@@ -228,6 +229,14 @@ fun ProfileScreen(
                 iconRes = R.drawable.settings,
                 title = "Cài đặt ứng dụng",
                 onClick = onSettings,
+                showTopBorder = true,
+                showBottomBorder = true
+            )
+            
+            ActionListItem(
+                iconRes = R.drawable.user,
+                title = "Quản lý nhân viên",
+                onClick = onEmployeeManagement,
                 showTopBorder = true,
                 showBottomBorder = true
             )
