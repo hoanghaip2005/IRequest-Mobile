@@ -1,0 +1,574 @@
+1. Quản lý yêu cầu cá nhân (My Requests Management)
+
+Hoạt động:
+
+Sau login, User vào tab “Yêu cầu của tôi”.
+
+Xem danh sách tất cả request mình tạo, sort mới nhất → cũ.
+
+Chạm item → mở chi tiết (Feature 2).
+
+Kéo để refresh, có thể kết hợp Search/Filter (Feature 7).
+
+Dùng gì:
+
+MyRequestsFragment, RecyclerView, SwipeRefreshLayout.
+
+MyRequestsViewModel gọi requestRepository.getByCreator(userId).
+
+Liên kết: Feature 2, 3, 7, 10, 11.
+
+Cần bổ sung:
+
+Loading state (progress bar), empty state, error state (lost connection).
+
+2. Chi tiết yêu cầu & trạng thái xử lý (Request Detail)
+
+Hoạt động:
+
+Nhận requestId từ danh sách.
+
+Hiển thị đầy đủ: tiêu đề, mô tả, category, priority, requester, assignee, deadline, trạng thái hiện tại & timeline trạng thái.
+
+Tùy role: hiển thị các action (Sửa/Hủy, Nhận xử lý, Approve/Reject,…).
+
+Dùng gì:
+
+RequestDetailFragment, RequestDetailViewModel.
+
+CardView chia section; RecyclerView cho timeline; TabLayout cho Comment/Attachment/History.
+
+Liên kết: Feature 3–6, 9–14, 17.
+
+Cần bổ sung:
+
+Chuẩn hóa model RequestDetail.
+
+Xử lý chuyển trạng thái với confirm dialog.
+
+3. Tạo & chỉnh sửa yêu cầu (Create/Update Request)
+
+Hoạt động:
+
+User bấm “+ Tạo yêu cầu”.
+
+Điền form: title, description, category, priority, đính kèm (nếu có).
+
+Submit → tạo request NEW/PENDING_APPROVAL.
+
+Với request NEW/REJECTED → có thể Edit, rồi lưu lại.
+
+Dùng gì:
+
+EditRequestFragment dùng chế độ Create/Update.
+
+TextInputLayout, Spinner/DropDown, validation cơ bản.
+
+EditRequestViewModel gọi createRequest(), updateRequest().
+
+Liên kết: Feature 1, 2, 4, 6, 11, 12.
+
+Cần bổ sung:
+
+Validate form (không để trống, hạn chế độ dài).
+
+Snackbar hiển thị kết quả thành công/thất bại.
+
+4. Đính kèm minh chứng (Attachment Management)
+
+Hoạt động:
+
+Trong form tạo/chỉnh sửa, user bấm “Thêm đính kèm” → chọn ảnh/file.
+
+Hiển thị thumbnail danh sách file đính kèm.
+
+Khi xem chi tiết request → tab/section “Đính kèm”, bấm mở file.
+
+Dùng gì:
+
+ActivityResultLauncher cho file picker/camera.
+
+Attachment entity; adapter để hiển thị.
+
+Thư viện image (Glide/Coil) để load ảnh.
+
+Liên kết: Feature 3, 2, 17.
+
+Cần bổ sung:
+
+Giới hạn dung lượng / số file.
+
+Cơ chế upload hoặc ít nhất là lưu đường dẫn local (demo).
+
+5. Trao đổi & bình luận (In-ticket Discussion)
+
+Hoạt động:
+
+Tab “Thảo luận” trong màn chi tiết.
+
+Hiển thị list comment (giống chat), newest ở dưới.
+
+User/Agent/Approver nhập text, nhấn gửi → comment xuất hiện.
+
+Dùng gì:
+
+RecyclerView chat-like, CommentAdapter.
+
+Input EditText + nút Send.
+
+CommentRepository (Room/API).
+
+Liên kết: Feature 2, 10, 17.
+
+Cần bổ sung:
+
+Format thời gian hiển thị đẹp.
+
+Có thể highlight comment của Agent/Approver khác user.
+
+6. Phân loại & gán ưu tiên (Categorization & Prioritization)
+
+Hoạt động:
+
+Khi tạo/ sửa request:
+
+User chọn Category (IT, HR, Mua sắm…).
+
+Chọn Priority (Low → Urgent).
+
+List & Detail hiển thị badge màu + icon.
+
+Dùng gì:
+
+Category & Priority enum/data class.
+
+Spinner/DropDown chọn category/priority.
+
+Hàm map priority → màu, label.
+
+Liên kết: Feature 3, 1, 7, 11, 15, 16, 19.
+
+Cần bổ sung:
+
+Danh sách category có thể lấy từ API (sau dùng cho Feature 20).
+
+Chuẩn hóa rule color & text cho priority.
+
+7. Tìm kiếm & lọc nâng cao (Search & Filter)
+
+Hoạt động:
+
+Trên list (My Requests, list của Agent/Admin) có:
+
+Search box: gõ từ khóa → lọc theo title/description.
+
+Nút Filter mở BottomSheet: chọn trạng thái, category, priority, thời gian.
+
+Nhấn “Áp dụng” → list cập nhật.
+
+Dùng gì:
+
+SearchView/TextInputEditText.
+
+BottomSheetDialogFragment cho màn filter.
+
+ViewModel lưu FilterState và áp dụng lên list.
+
+Liên kết: Feature 1, 8, 15, 16.
+
+Cần bổ sung:
+
+Debounce search để không query quá nhiều.
+
+Cho phép reset filter về mặc định.
+
+8. Quản lý yêu cầu theo vai trò (Role-based Views)
+
+Hoạt động:
+
+Sau login, app biết role của user.
+
+Tùy role hiển thị tab & menu khác nhau:
+
+User: My Requests.
+
+Agent: My Assigned, Unassigned.
+
+Approver: Approval Queue.
+
+Admin: Dashboard, Reports, Config.
+
+Chặn role không phù hợp vào màn hình “cấm”.
+
+Dùng gì:
+
+BottomNavigationView động (ẩn/hiện item).
+
+UserSession lưu role.
+
+Guard trong Fragment (kiểm tra role trước khi load).
+
+Liên kết: Tất cả feature còn lại (vai trò quyết định ai thấy gì).
+
+Cần bổ sung:
+
+Mock dữ liệu role trong giai đoạn đầu.
+
+Có thể có màn User Profile để xem role.
+
+9. Nhận yêu cầu & phân công xử lý (Assignment Management)
+
+Hoạt động – Agent:
+
+Vào tab “Unassigned Requests” → thấy các request chưa ai nhận.
+
+Bấm “Assign to me” → request gán cho agent này, trạng thái thành IN_PROGRESS (hoặc vẫn NEW nhưng có assignee).
+
+Hoạt động – Admin:
+
+Mở chi tiết request → bấm “Phân công” → chọn agent từ danh sách → lưu.
+
+Dùng gì:
+
+RecyclerView list Unassigned.
+
+Dialog chọn agent: AlertDialog + list.
+
+Repository: assignRequest(requestId, assigneeId).
+
+Liên kết: Feature 2, 8, 11, 15, 16, 17, 19.
+
+Cần bổ sung:
+
+Danh sách agent (mock hoặc API).
+
+Log lại thời điểm assign (cho Activity Log).
+
+10. Thông báo (Notifications)
+
+Hoạt động:
+
+Khi có event:
+
+Yêu cầu đổi trạng thái,
+
+Có comment mới,
+
+Ticket mới được assign cho bạn,
+
+Ticket sắp quá hạn SLA,…
+
+Tạo Notification record + (tuỳ bạn) show local notification.
+
+Bấm vào notification → mở chi tiết request tương ứng.
+
+Dùng gì:
+
+NotificationManager (local notification).
+
+Notification entity + NotificationRepository.
+
+Màn “Trung tâm thông báo” (RecyclerView list).
+
+Liên kết: Hầu hết feature: 2, 5, 9, 11, 12, 13, 14, 19.
+
+Cần bổ sung:
+
+Icon, sound cơ bản cho notification.
+
+Cho phép đánh dấu đã đọc.
+
+11. Quản lý SLA & deadline (SLA Management)
+
+Hoạt động:
+
+Mỗi category có SLA mặc định (ví dụ:
+
+IT ticket: 8 giờ,
+
+Nghỉ phép: 24h duyệt…).
+
+Khi tạo request → tính deadline.
+
+List & Detail hiển thị label:
+
+Đúng hạn / Sắp trễ / Đã trễ (dựa trên now vs deadline).
+
+Dùng gì:
+
+SlaPolicy entity: categoryId, durationHours.
+
+Helpers để tính deadline + status.
+
+Có thể dùng WorkManager check định kỳ để update tình trạng.
+
+Liên kết: Feature 2, 3, 15, 16, 19, 20.
+
+Cần bổ sung:
+
+Định nghĩa rõ business rule khi chuyển trạng thái thì SLA dừng chưa? (VD: Completed thì stop).
+
+Option bật/tắt notification khi sắp trễ.
+
+12. Quy trình phê duyệt 1 cấp (Single-level Approval)
+
+Hoạt động:
+
+Áp dụng cho 1 số category (nghỉ phép, mua sắm nhỏ…).
+
+Sau khi tạo: request ở trạng thái PENDING_APPROVAL.
+
+Approver mở tab “Yêu cầu cần phê duyệt” → xem chi tiết.
+
+Bấm Approve / Reject → request chuyển trạng thái tương ứng.
+
+Dùng gì:
+
+Role APPROVER.
+
+ApprovalAction API/DAO: approve(requestId, reason?), reject(...).
+
+UI: 2 nút + dialog hỏi xác nhận + input lý do (khi reject).
+
+Liên kết: Feature 2, 8, 10, 11, 13, 17.
+
+Cần bổ sung:
+
+Lưu approvedBy, approvedAt, rejectReason.
+
+Quản lý list yêu cầu cần duyệt theo approver.
+
+13. Quy trình phê duyệt nhiều cấp (Multi-level Approval)
+
+Hoạt động:
+
+Với yêu cầu giá trị lớn/nhạy cảm: cần 2–3 cấp.
+
+Ví dụ:
+
+Cấp 1: Trưởng phòng,
+
+Cấp 2: Giám đốc.
+
+Hệ thống lưu danh sách approver theo thứ tự.
+
+Cấp 1 approve → chuyển sang chờ cấp 2; khi tất cả cấp approve → request chuyển sang APPROVED/IN_PROGRESS.
+
+Dùng gì:
+
+ApprovalStep model: stepIndex, approverId, status, comment.
+
+UI timeline phê duyệt trong màn chi tiết.
+
+Logic trong Repository: tìm “step hiện tại” để hiển thị nút Approve/Reject đúng người.
+
+Liên kết: Feature 12, 10, 11, 17, 20.
+
+Cần bổ sung:
+
+Quy ước rõ nếu 1 cấp reject → dừng toàn bộ.
+
+Cho phép Admin cấu hình số cấp (Feature 20).
+
+14. Đánh giá chất lượng xử lý (Rating & Feedback)
+
+Hoạt động:
+
+Khi request vào trạng thái COMPLETED:
+
+User mở chi tiết → thấy phần “Đánh giá”.
+
+Chọn số sao (1–5) + comment ngắn.
+
+Một request chỉ được đánh giá 1 lần (có thể update tuỳ bạn).
+
+Dùng gì:
+
+RatingBar, TextInputEditText comment.
+
+Rating entity: requestId, score, comment, createdBy.
+
+Repository: submitRating(requestId, score, comment).
+
+Liên kết: Feature 2, 15, 16.
+
+Cần bổ sung:
+
+Tổng hợp rating theo Agent/Category cho báo cáo.
+
+UI nhắc user đánh giá (banner nhỏ).
+
+15. Dashboard tổng quan cho Agent/Admin
+
+Hoạt động:
+
+Admin (và có thể Agent) mở tab “Dashboard”.
+
+Thấy số liệu tổng hợp:
+
+Số request mở, hoàn thành, trễ, theo ngày gần đây.
+
+Top category nhiều request.
+
+(Tùy) rating trung bình.
+
+Dùng gì:
+
+DashboardFragment với nhiều card.
+
+Gọi repository để lấy aggregated data (count group by…).
+
+Biểu đồ đơn giản (column, pie) hoặc chỉ số text.
+
+Liên kết: Feature 1, 11, 14, 16.
+
+Cần bổ sung:
+
+API/DAO hỗ trợ aggregation (hoặc làm thủ công từ list).
+
+Lọc theo khoảng thời gian (today, tuần, tháng).
+
+16. Báo cáo & biểu đồ chi tiết (Reports & Charts)
+
+Hoạt động:
+
+Tab “Reports” cho Admin.
+
+Chọn khoảng thời gian → hiển thị:
+
+Biểu đồ cột: số request theo category.
+
+Biểu đồ tròn: tỉ lệ trạng thái.
+
+Biểu đồ line: số request theo ngày.
+
+Bảng số liệu (optional).
+
+Dùng gì:
+
+Thư viện chart (ví dụ MPAndroidChart).
+
+ReportRepository xử lý thống kê.
+
+Liên kết: Feature 6, 11, 14, 15.
+
+Cần bổ sung:
+
+Thống nhất cách lấy dữ liệu (từ local DB hay API).
+
+Có thể thêm export CSV nếu muốn bonus.
+
+17. Lịch sử hoạt động (Activity Log / Audit Trail)
+
+Hoạt động:
+
+Mỗi lần có hành động quan trọng:
+
+Tạo request,
+
+Đổi trạng thái,
+
+Assign,
+
+Approve/Reject,
+
+Thêm comment, attachment…
+→ ghi 1 dòng log.
+
+Trong chi tiết request có tab “Lịch sử” hiển thị list log.
+
+Dùng gì:
+
+ActivityLog entity: requestId, actionType, actor, timestamp, extraData.
+
+RecyclerView timeline logs.
+
+Liên kết: Gần như mọi feature thao tác trên request: 2, 3, 4, 5, 9, 11–13.
+
+Cần bổ sung:
+
+Thống nhất danh sách actionType (enum).
+
+Hạn chế log spam những hành động vụn vặt không cần thiết.
+
+18. Hỗ trợ offline & đồng bộ (Offline-first & Sync)
+
+Hoạt động:
+
+Khi mất mạng:
+
+User vẫn có thể tạo request mới → lưu vào Room với flag pendingSync = true.
+
+Khi có mạng lại:
+
+WorkManager chạy, gửi các request pending lên server.
+
+Danh sách request hiển thị từ local cache → dùng được offline.
+
+Dùng gì:
+
+Room cho local DB.
+
+WorkManager để chạy sync nền.
+
+NetworkStatus observer để biết online/offline.
+
+Liên kết: Feature 1, 2, 3, 4, 5, 10.
+
+Cần bổ sung:
+
+Chiến lược xử lý xung đột (nếu server cũng sửa).
+
+Hiển thị trạng thái “Đang chờ đồng bộ” cho ticket offline.
+
+19. Tự động gán yêu cầu (Auto-routing / Auto-assignment)
+
+Hoạt động:
+
+Khi user tạo request:
+
+App/Server đọc category, priority,… → áp dụng rule.
+
+Ví dụ: Category = IT → assign cho Agent IT; Nghỉ phép → assign cho Approver là manager của user.
+
+Optional: chọn Agent ít ticket nhất.
+
+Dùng gì:
+
+Một lớp RoutingEngine đơn giản: nhận Request, trả về assigneeId.
+
+Dữ liệu rule lưu ở local/remote (config).
+
+Liên kết: Feature 3, 6, 9, 11, 20.
+
+Cần bổ sung:
+
+UI cho Admin xem & test rule (có thể đơn giản hard-code trong đồ án).
+
+Log lại kết quả routing trong Activity Log.
+
+20. Cấu hình loại yêu cầu & workflow (Configurable Request Types & Workflow)
+
+Hoạt động:
+
+Admin vào tab “Cấu hình”:
+
+Thêm/sửa/xoá Category (tên, icon, SLA, có cần phê duyệt không, nếu có thì mấy cấp).
+
+App đọc cấu hình này:
+
+Tạo form phù hợp,
+
+Gán SLA,
+
+Xác định có đưa vào luồng phê duyệt 1 cấp hay nhiều cấp.
+
+Dùng gì:
+
+CategoryConfig + WorkflowConfig entity.
+
+ConfigFragment cho Admin.
+
+Repository: getAllConfigs(), updateConfig(), v.v.
+
+Liên kết: Rất nhiều feature: 3, 6, 11, 12, 13, 19.
