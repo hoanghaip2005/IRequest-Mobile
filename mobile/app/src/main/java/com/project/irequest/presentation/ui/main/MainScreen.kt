@@ -13,6 +13,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -53,10 +56,15 @@ fun MainScreen(
     onLogout: () -> Unit = {}
 ) {
     val navController = rememberNavController()
+    var currentBottomTab by remember { mutableStateOf(AppDestinations.Main.HOME) }
     
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            BottomNavigationBar(
+                navController = navController,
+                currentTab = currentBottomTab,
+                onTabChange = { newTab -> currentBottomTab = newTab }
+            )
         }
     ) { paddingValues ->
         NavHost(
@@ -70,18 +78,19 @@ fun MainScreen(
             composable(AppDestinations.Main.HOME) {
                 HomeScreenComplete(
                     onCreateRequest = {
-                        // TODO: Navigate to create request
+                        // Navigate to create request screen
+                        navController.navigate("main/create-request")
                     },
                     onMyRequests = {
-                        // Navigate to My Tasks tab
-                        navController.navigate(AppDestinations.Main.MY_TASKS) {
-                            launchSingleTop = true
-                        }
+                        // Navigate to My Requests tab
+                        navController.navigate("main/my-requests")
                     },
                     onAssignedToMe = {
                         // Navigate to My Tasks tab
                         navController.navigate(AppDestinations.Main.MY_TASKS) {
+                            popUpTo(AppDestinations.Main.HOME) { saveState = true }
                             launchSingleTop = true
+                            restoreState = true
                         }
                     },
                     onDrafts = {
@@ -166,16 +175,32 @@ fun MainScreen(
             composable(AppDestinations.Main.MY_TASKS) {
                 MyTasksScreen(
                     onTaskClick = { taskId ->
-                        // TODO: Navigate to task processing screen
+                        // Navigate to task detail/processing screen
+                        // Extract request ID from task ID (TASK-001 -> REQ-001)
+                        val requestId = taskId.replace("TASK", "REQ").trim()
+                        navController.navigate("main/request-detail/$requestId") {
+                            launchSingleTop = true
+                        }
                     },
                     onCreateRequest = {
-                        // TODO: Navigate to create request screen
+                        // Navigate to create request screen
+                        navController.navigate("main/create-request") {
+                            launchSingleTop = true
+                        }
                     },
                     onQuickApprove = { taskId ->
-                        // TODO: Handle quick approve
+                        // Handle quick approve with confirmation
+                        // TODO: Implement approval confirmation dialog
+                        // For now: show a snackbar message and update state
+                        println("Approved task: $taskId")
+                        // After approval, the task should be removed from list
                     },
                     onQuickReject = { taskId ->
-                        // TODO: Handle quick reject
+                        // Handle quick reject with reason input
+                        // TODO: Implement rejection reason dialog
+                        // For now: show a snackbar message
+                        println("Rejected task: $taskId")
+                        // After rejection, the task should be removed from list
                     }
                 )
             }
@@ -304,6 +329,74 @@ fun MainScreen(
                     onBack = { navController.navigateUp() }
                 )
             }
+            
+            // Create Request Screen - Feature 3
+            composable("main/create-request") {
+                com.project.irequest.presentation.ui.requests.CreateRequestScreen(
+                    requestId = null,
+                    onNavigateBack = { navController.navigateUp() },
+                    onRequestCreated = { requestId ->
+                        // Navigate to request detail after creation
+                        navController.navigate("main/request-detail/$requestId") {
+                            popUpTo("main/create-request") { inclusive = true }
+                        }
+                    }
+                )
+            }
+            
+            // Edit Request Screen
+            composable("main/edit-request/{requestId}") { backStackEntry ->
+                val requestId = backStackEntry.arguments?.getString("requestId")?.toIntOrNull() ?: 1
+                com.project.irequest.presentation.ui.requests.CreateRequestScreen(
+                    requestId = requestId,
+                    onNavigateBack = { navController.navigateUp() },
+                    onRequestCreated = { updatedRequestId ->
+                        // Navigate back to request detail after update
+                        navController.navigate("main/request-detail/$updatedRequestId") {
+                            popUpTo("main/edit-request/{requestId}") { inclusive = true }
+                        }
+                    }
+                )
+            }
+            
+            // My Requests Screen - Feature 1
+            composable("main/my-requests") {
+                com.project.irequest.presentation.ui.requests.MyRequestsScreen(
+                    onRequestClick = { requestId ->
+                        // Navigate to request detail
+                        navController.navigate("main/request-detail/$requestId") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateBack = { 
+                        // Navigate back using back stack
+                        navController.navigateUp()
+                    }
+                )
+            }
+            
+            // Request Detail Screen - Feature 2
+            composable("main/request-detail/{requestId}") { backStackEntry ->
+                val requestId = backStackEntry.arguments?.getString("requestId")?.toIntOrNull() ?: 1
+                com.project.irequest.presentation.ui.requests.RequestDetailScreen(
+                    requestId = requestId,
+                    onNavigateBack = { 
+                        // Navigate back using back stack
+                        navController.navigateUp()
+                    },
+                    onEditRequest = {
+                        navController.navigate("main/edit-request/$requestId") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onApproveRequest = {
+                        // TODO: Show approval dialog
+                    },
+                    onRejectRequest = {
+                        // TODO: Show rejection reason dialog
+                    }
+                )
+            }
         }
     }
 }
@@ -311,6 +404,8 @@ fun MainScreen(
 @Composable
 private fun BottomNavigationBar(
     navController: NavHostController,
+    currentTab: String = AppDestinations.Main.HOME,
+    onTabChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -329,14 +424,36 @@ private fun BottomNavigationBar(
             NavigationBarItem(
                 selected = isSelected,
                 onClick = {
+                    // Update current tab
+                    onTabChange(item.route)
+                    
+                    // If already on this tab, do nothing
+                    if (item.route == currentDestination?.route) {
+                        return@NavigationBarItem
+                    }
+                    
+                    // Define bottom nav routes
+                    val bottomNavRoutes = listOf(
+                        AppDestinations.Main.HOME,
+                        AppDestinations.Main.MY_TASKS,
+                        AppDestinations.Main.ALERTS,
+                        AppDestinations.Main.PROFILE
+                    )
+                    
+                    // Clear all nested screens by popping back to a bottom nav tab or HOME
+                    while (navController.currentDestination?.route !in bottomNavRoutes &&
+                           navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    }
+                    
+                    // Navigate to the selected bottom tab
                     navController.navigate(item.route) {
-                        // Pop back to the start destination (HOME) to avoid building up large stack
-                        popUpTo(navController.graph.findStartDestination().id) {
+                        // Pop back to HOME but keep it in stack
+                        popUpTo(AppDestinations.Main.HOME) {
                             saveState = true
+                            inclusive = false
                         }
-                        // Avoid multiple copies of the same destination
                         launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
                 },

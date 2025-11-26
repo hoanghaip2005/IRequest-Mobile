@@ -35,11 +35,14 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +75,10 @@ fun MyTasksScreen(
     onQuickReject: (String) -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var showApprovalDialog by remember { mutableStateOf(false) }
+    var showRejectDialog by remember { mutableStateOf(false) }
+    var selectedTaskId by remember { mutableStateOf("") }
+    var rejectReason by remember { mutableStateOf("") }
     
     // Task categories based on multi-workflow system
     val tabs = listOf(
@@ -221,12 +228,86 @@ fun MyTasksScreen(
                         },
                         showQuickActions = selectedTab == 0, // Show quick actions for "To Process"
                         onTaskClick = { onTaskClick("TASK-${String.format("%03d", index + 1)}") },
-                        onQuickApprove = { onQuickApprove("TASK-${String.format("%03d", index + 1)}") },
-                        onQuickReject = { onQuickReject("TASK-${String.format("%03d", index + 1)}") }
+                        onQuickApprove = { 
+                            selectedTaskId = "TASK-${String.format("%03d", index + 1)}"
+                            showApprovalDialog = true
+                        },
+                        onQuickReject = { 
+                            selectedTaskId = "TASK-${String.format("%03d", index + 1)}"
+                            rejectReason = ""
+                            showRejectDialog = true
+                        }
                     )
                 }
             }
         }
+    }
+    
+    // Approval Confirmation Dialog
+    if (showApprovalDialog) {
+        AlertDialog(
+            onDismissRequest = { showApprovalDialog = false },
+            title = { Text("Approve Task") },
+            text = { Text("Are you sure you want to approve task $selectedTaskId?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onQuickApprove(selectedTaskId)
+                        showApprovalDialog = false
+                        selectedTaskId = ""
+                    }
+                ) {
+                    Text("Approve", color = CustomGreen)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showApprovalDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    
+    // Rejection Reason Dialog
+    if (showRejectDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showRejectDialog = false },
+            title = { Text("Reject Task") },
+            text = {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text("Please provide a reason for rejection:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = rejectReason,
+                        onValueChange = { newValue -> rejectReason = newValue },
+                        label = { Text("Reason") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        maxLines = 5
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (rejectReason.isNotEmpty()) {
+                            onQuickReject(selectedTaskId)
+                            showRejectDialog = false
+                            selectedTaskId = ""
+                            rejectReason = ""
+                        }
+                    }
+                ) {
+                    Text("Reject", color = CustomRed)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRejectDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
