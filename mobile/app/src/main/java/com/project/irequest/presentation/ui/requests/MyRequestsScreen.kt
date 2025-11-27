@@ -47,14 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.project.irequest.presentation.theme.PrimaryBlue
 
-/**
- * My Requests Screen - Feature 1
- * Shows all requests created by the current user
- * - List of requests sorted by newest first
- * - Pull to refresh
- * - Click to view details (Feature 2)
- * - Search/Filter integration (Feature 7)
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyRequestsScreen(

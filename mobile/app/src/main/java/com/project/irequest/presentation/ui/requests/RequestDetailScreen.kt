@@ -50,14 +50,6 @@ import com.project.irequest.presentation.theme.CustomGreen
 import com.project.irequest.presentation.theme.CustomRed
 import com.project.irequest.presentation.theme.PrimaryBlue
 
-/**
- * Request Detail Screen - Feature 2
- * Shows detailed information about a single request
- * - Full request details: title, description, category, priority, requester, assignee, deadline
- * - Status timeline
- * - Tabs: Details, Comments, Attachments, History
- * - Action buttons based on role: Edit, Approve, Reject, Cancel
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RequestDetailScreen(

@@ -56,14 +56,6 @@ import androidx.compose.ui.unit.sp
 import com.project.irequest.presentation.theme.PrimaryBlue
 import kotlinx.coroutines.launch
 
-/**
- * Create/Edit Request Screen - Feature 3
- * Form for creating or updating requests
- * - Input fields: title, description, category, priority
- * - Attachment management (Feature 4)
- * - Form validation
- * - Success/error messages via Snackbar
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateRequestScreen(
